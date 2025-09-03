@@ -1,0 +1,354 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+enum UserType {
+  job_seeker
+  recruiter
+}
+
+enum WorkLocation {
+  office
+  hybrid
+  remote
+}
+
+enum EmploymentType {
+  full_time
+  part_time
+  contract
+  internship
+}
+
+enum ExperienceLevel {
+  entry_level
+  mid_level
+  senior_level
+}
+
+enum ApplicationStatus {
+  pending
+  reviewed
+  accepted
+  rejected
+  interviewed
+  hired
+}
+
+enum InterviewStatus {
+  scheduled
+  completed
+  cancelled
+}
+
+enum JobType {
+  fulltime
+  parttime
+  internship
+}
+
+enum TeamRole {
+  recruiter
+  admin
+  third_party
+  superadmin
+}
+
+model User {
+  id                String    @id @default(auto()) @map("_id") @db.ObjectId
+  email             String    @unique
+  lastname          String
+  firstname         String
+  othername         String?
+  pronoun           String?
+  password          String?
+  avatar            String?   @default("https://media.istockphoto.com/id/588348500/vector/male-avatar-profile-picture-vector.jpg?s=612x612&w=0&k=20&c=tPPah8S9tmcyOXCft1Ct0tCAdpfSaUNhGzJK7kQiQCg=")
+  authId            String?
+  phone_number      String?
+  userType          UserType
+  resetToken        String?
+  resetTokenExpires DateTime?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  // Relation for owner/creator of company
+  ownedCompanyProfile CompanyProfile? @relation("UserCompanyProfiles")
+
+  // Relation for team memberships (multiple companies)
+  teamMemberships TeamMember[] @relation("UserTeamMemberships")
+
+  applicants            Applicant[] @relation("UserApplicant")
+  interviewsAsApplicant Interview[] @relation("UserInterviewsAsApplicant")
+  jobSeeker             JobSeeker?
+  twoFactorEnabled      Boolean     @default(false)
+  twoFactorSecret       String?
+  filters               Filter[]    @relation("UserFilters")
+}
+
+model JobSeeker {
+  id     String @id @default(auto()) @map("_id") @db.ObjectId
+  userId String @unique @db.ObjectId
+  user   User   @relation(fields: [userId], references: [id])
+
+  bio             String?
+  location        LocationInfo?
+  hasDisability   Boolean?
+  interestedRoles String[]
+  experienceLevel ExperienceLevel?
+  workMode        WorkLocation?
+  jobType         EmploymentType?
+  skills          String[]
+  industry        String?
+
+  experience        ExperienceEntry[]
+  education         EducationEntry[]
+  certifications    Certification[]
+  portfolio         PortfolioEntry[]
+  resume            String?
+  interests         String[]
+  profileCompletion Float             @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  applications        Application[]        @relation("ApplicantApplications")
+  interviews          Interview[]          @relation("ApplicantInterviews")
+  notificationSetting NotificationSetting?
+}
+
+model CompanyProfile {
+  id                String       @id @default(auto()) @map("_id") @db.ObjectId
+  userId            String       @unique @db.ObjectId
+  user              User         @relation("UserCompanyProfiles", fields: [userId], references: [id], onDelete: Cascade)
+  companyName       String       @unique
+  description       String
+  industry          String
+  website           String?
+  location          String?
+  numberOfEmployees String?
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+  jobPostings       JobPosting[] @relation("CompanyJobPostings")
+  hiringTeam        HiringTeam?  @relation("CompanyHiringTeam")
+  interviews        Interview[]  @relation("CompanyInterviews")
+  filter            Filter?      @relation("FilterCompanyProfiles")
+}
+
+model HiringTeam {
+  id               String         @id @default(auto()) @map("_id") @db.ObjectId
+  companyProfileId String         @unique @db.ObjectId
+  companyProfile   CompanyProfile @relation("CompanyHiringTeam", fields: [companyProfileId], references: [id], onDelete: Cascade)
+  teamMembers      TeamMember[]   @relation("HiringTeamMembers")
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+}
+
+model TeamMember {
+  id             String     @id @default(auto()) @map("_id") @db.ObjectId
+  hiringTeamId   String     @db.ObjectId
+  hiringTeam     HiringTeam @relation("HiringTeamMembers", fields: [hiringTeamId], references: [id], onDelete: Cascade)
+  userId         String?    @db.ObjectId
+  user           User?      @relation("UserTeamMemberships", fields: [userId], references: [id], onDelete: SetNull)
+  email          String
+  role           TeamRole   @default(recruiter)
+  access         Boolean    @default(true)
+  sentInvite     Boolean    @default(false)
+  acceptedInvite Boolean?   @default(false)
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+
+  @@unique([hiringTeamId, userId])
+  @@unique([hiringTeamId, email])
+  @@index([hiringTeamId])
+  @@index([userId])
+}
+
+model JobPosting {
+  id               String           @id @default(auto()) @map("_id") @db.ObjectId
+  companyProfileId String           @db.ObjectId
+  companyProfile   CompanyProfile   @relation("CompanyJobPostings", fields: [companyProfileId], references: [id], onDelete: Cascade)
+  jobTitle         String
+  department       String?
+  companyLocation  String
+  country          String?
+  state            String?
+  workLocation     WorkLocation     @default(office)
+  industry         String
+  companyFunction  String?
+  employmentType   EmploymentType   @default(full_time)
+  experienceLevel  ExperienceLevel?
+  education        String?
+  monthlySalaryMin Float?
+  monthlySalaryMax Float?
+  currency         String?
+  deadline         DateTime?
+  jobDescription   String
+  requirements     String?
+  assessment       String?
+  status           String           @default("active")
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime?        @updatedAt
+
+  applications Application[] @relation("JobApplications")
+  interviews   Interview[]   @relation("JobInterviews")
+
+  @@unique([companyProfileId, jobTitle, companyLocation, industry])
+  @@index([companyProfileId])
+}
+
+model Applicant {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String?  @db.ObjectId
+  user      User?    @relation("UserApplicant", fields: [userId], references: [id], onDelete: SetNull)
+  name      String
+  email     String   @unique
+  resume    String?  @db.String
+  phone     String?  @db.String
+  status    String   @default("applied")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+}
+
+model Application {
+  id           String            @id @default(auto()) @map("_id") @db.ObjectId
+  applicantId  String            @db.ObjectId
+  applicant    JobSeeker         @relation("ApplicantApplications", fields: [applicantId], references: [id], onDelete: Cascade)
+  jobPostingId String            @db.ObjectId
+  jobPosting   JobPosting        @relation("JobApplications", fields: [jobPostingId], references: [id], onDelete: Cascade)
+  status       ApplicationStatus @default(pending)
+  appliedAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+  coverLetter  String?           @db.String
+
+  @@unique([applicantId, jobPostingId])
+  @@index([applicantId])
+  @@index([jobPostingId])
+}
+
+model Interview {
+  id               String          @id @default(auto()) @map("_id") @db.ObjectId
+  jobPostingId     String          @db.ObjectId
+  jobPosting       JobPosting      @relation("JobInterviews", fields: [jobPostingId], references: [id], onDelete: Cascade)
+  applicantId      String          @db.ObjectId
+  applicant        JobSeeker       @relation("ApplicantInterviews", fields: [applicantId], references: [id], onDelete: Cascade)
+  companyProfileId String?         @db.ObjectId
+  companyProfile   CompanyProfile? @relation("CompanyInterviews", fields: [companyProfileId], references: [id], onDelete: SetNull)
+  dateTime         DateTime
+  location         String
+  interviewType    String          @default("Technical")
+  duration         String          @default("1 hour")
+  notes            String?         @db.String
+  status           InterviewStatus @default(scheduled)
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+
+  userId String? @db.ObjectId
+  user   User?   @relation("UserInterviewsAsApplicant", fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([jobPostingId])
+  @@index([applicantId])
+  @@index([dateTime])
+  @@index([companyProfileId])
+}
+
+model NotificationSetting {
+  id     String    @id @default(auto()) @map("_id") @db.ObjectId
+  userId String    @unique @db.ObjectId
+  user   JobSeeker @relation(fields: [userId], references: [id])
+
+  platformUpdates Boolean @default(false)
+
+  jobExpiry       Boolean @default(false)
+  jobReviewOrFlag Boolean @default(false)
+
+  interviewScheduleUpdate Boolean @default(false)
+
+  recruiterResponse         Boolean @default(false)
+  recruiterViewedAssessment Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+type ExperienceEntry {
+  title            String
+  skill            String?
+  company          String
+  location         String?
+  workMode         WorkLocation?
+  employmentType   EmploymentType?    
+  startDate        DateTime
+  endDate          DateTime?
+  currentlyWorking Boolean   @default(false)
+  description      String?
+}
+
+type EducationEntry {
+  institution String
+  degree      String
+  field       String
+  startDate   DateTime
+  endDate     DateTime?
+  grade       String?
+  description String?
+}
+
+type Certification {
+  title     String
+  authority String
+  issueDate DateTime
+}
+
+type PortfolioEntry {
+  title        String
+  description  String?
+  link         String?
+  technologies String[]
+}
+
+type LocationInfo {
+  city    String?
+  country String?
+}
+
+model Filter {
+  id               String            @id @default(auto()) @map("_id") @db.ObjectId
+  userId           String?           @db.ObjectId
+  user             User?             @relation("UserFilters", fields: [userId], references: [id], onDelete: Cascade)
+  companyProfileId String?           @unique @db.ObjectId
+  companyProfile   CompanyProfile?   @relation("FilterCompanyProfiles", fields: [companyProfileId], references: [id], onDelete: Cascade)
+  industry         String[]          @default([])
+  role             String[]          @default([])
+  jobType          EmploymentType[]  @default([])
+  experienceLevel  ExperienceLevel[] @default([])
+  skill            String[]          @default([])
+  workMode         WorkLocation[]    @default([])
+  salaryRange      SalaryRange[]
+  hasDisability    Boolean           @default(false)
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+}
+
+type SalaryRange {
+  min      Int
+  max      Int
+  currency String
+}
+
+model Country {
+  id            String  @id @default(auto()) @map("_id") @db.ObjectId
+  country       String?
+  capital       String?
+  abbreviation  String?
+  flag          String?
+  currency      String?
+
+  @@map("countries")
+}
