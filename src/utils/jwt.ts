@@ -10,16 +10,16 @@ if (!jwtSecret) {
 }
 
 class TokenService {
-  generateToken(userId: string, userType: string): string {
-    return jwt.sign({ userId, userType }, jwtSecret, { expiresIn: "14d" });
+  generateToken(userId: string, role: string): string {
+    return jwt.sign({ userId, role }, jwtSecret, { expiresIn: "3d" });
   }
 
-  generateResetToken(userId: string, userType: string): string {
-    return jwt.sign({ userId, userType }, jwtSecret, { expiresIn: "15m" });
+  generateResetToken(userId: string, role: string): string {
+    return jwt.sign({ userId, role }, jwtSecret, { expiresIn: "15m" });
   }
 
-  generateRefreshToken(userId: string, userType: string): string {
-    return jwt.sign({ userId, userType }, jwtSecret, { expiresIn: "14d" });
+  generateRefreshToken(userId: string, role: string): string {
+    return jwt.sign({ userId, role }, jwtSecret, { expiresIn: "14d" });
   }
 
   verifyToken(token: string): string | JwtPayload {

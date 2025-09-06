@@ -1,39 +1,52 @@
+import { User } from "../dtos/registerUserDto";
+
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 
-interface User {
-  email: string;
-  lastname: String;
-  firstname: String;
-  password: String;
-  userType: String;
-}
-
 export class AuthService {
-  static getUserByEmail = async (email: string) => {
-    const existingUser = await prisma.user.findUnique({
+  static getExistingUser = async (email: string, phone: string) => {
+    const existingUserByEmail = await prisma.user.findUnique({
       where: { email },
-      select: {
-        id: true,
-        email: true,
-        lastname: true,
-        firstname: true,
-        password: true,
-        userType: true,
-        twoFactorEnabled: true,
-        twoFactorSecret: true,
-      },
     });
-    return existingUser;
+    if (existingUserByEmail)
+      return { user: existingUserByEmail, conflict: "email" };
+
+    if (phone) {
+      const existingUserByPhone = await prisma.user.findUnique({
+        where: { phone },
+      });
+
+      if (existingUserByPhone)
+        return { user: existingUserByEmail, conflict: "phone" };
+    }
+
+    return null;
+  };
+
+  static getUserByEmail = async (email: string) => {
+    const existingUserByEmail = await prisma.user.findUnique({
+      where: { email },
+    });
+
+    return existingUserByEmail;
   };
 
   static getUserUsers = async () => {
     return await prisma.user.findMany();
   };
 
+  static getUserById = async (id: string) => {
+    return await prisma.user.findUnique({
+      where: { id },
+    });
+  };
+
   static registerUser = async (data: User) => {
     return await prisma.user.create({
-      data,
+      data: {
+        ...data,
+        role: data.role || "user",
+      },
     });
   };
 }

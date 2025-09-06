@@ -1,20 +1,20 @@
-# 🚀 Bias Free Job Board  Api
+# 🚀 DIDSECPLUS Api
 
 A modern Node.js application built with TypeScript for improved type safety, maintainability, and scalability.
 
-##  Features
+## Features
 
--  Built with TypeScript
--  Express.js server
--  RESTful API structure
--  Middleware support
--  Environment-based configuration
--  Pino logger for logging
--  Modular and scalable folder structure
+- Built with TypeScript
+- Express.js server
+- RESTful API structure
+- Middleware support
+- Environment-based configuration
+- Pino logger for logging
+- Modular and scalable folder structure
 
 ---
 
-##  Project Structure
+## Project Structure
 
 ### 📁 Project Structure
 
@@ -44,38 +44,37 @@ project-root/
 └── README.md               # Project documentation
 ```
 
-
-
-
-
-##  Setup
+## Setup
 
 ### 1 Clone the repo
 
 git clone https://github.com/Bias-free-job-board/Api.git
 
+## Install Dependecies
 
-
-## Install Dependecies 
 npm install
 
 ## Environment variables
+
 - Create a .env file in the root with your configuration. Example:
-    PORT=5000
-    NODE_ENV=development
-    DB_URI=mongodb://localhost:27017/mydb
-    JWT_SECRET=your_jwt_secret
+  PORT=5000
+  NODE_ENV=development
+  DB_URI=mongodb://localhost:27017/mydb
+  JWT_SECRET=your_jwt_secret
 
+## Run the app
 
- ## Run the app
-   ### Development
+### Development
+
      npm run dev
 
-   ### Production
+### Production
+
      npm run build
     npm start
 
 ## Technologies Used
+
 - Node.js
 
 - TypeScript
@@ -84,13 +83,9 @@ npm install
 
 - Prisma (with MongoDB)
 
-
-
 ## License
 
+## Authors
 
- ## Authors
-  Uche Ali And Darlington
-  [Visit my GitHub](https://github.com/solowiseCv)
-
-
+Darlington
+[Visit my GitHub](https://github.com/Dhalintin)

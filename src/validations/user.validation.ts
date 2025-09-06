@@ -1,24 +1,16 @@
-import { z } from "zod";
+import Joi from "joi";
 
-export const updateUserSchema = z.object({
-  firstname: z.string().min(1, "First name is required").max(50, "First name too long").optional(),
-  lastname: z.string().min(1, "Last name is required").max(50, "Last name too long").optional(),
-  email: z.string().email("Invalid email format").optional(),
-  phone_number: z.string().optional(),
+export const createUserSchema = Joi.object({
+  email: Joi.string().email().required(),
+  username: Joi.string().required(),
+  name: Joi.string().required(),
+  phone: Joi.string().optional(),
+  role: Joi.string()
+    .valid("superAdmin", "admin", "citizen")
+    .optional()
+    .messages({
+      "any.only": "role must be either 'superAdmin', 'admin' or 'citizen' .",
+    }),
+  location: Joi.string().optional(),
+  device: Joi.string().valid("Android", "iOS", "Web", "Unknown").optional(),
 });
-
-export const paginationSchema = z.object({
-  page: z.string().regex(/^\d+$/, "Page must be a number").transform(Number).pipe(
-    z.number().min(1, "Page must be at least 1")
-  ).optional().default(1),
-  limit: z.string().regex(/^\d+$/, "Limit must be a number").transform(Number).pipe(
-    z.number().min(1, "Limit must be at least 1").max(100, "Limit cannot exceed 100")
-  ).optional().default(10),
-});
-
-export const userIdSchema = z.object({
-  userId: z.string().min(1, "User ID is required"),
-});
-
-export type UpdateUserValidation = z.infer<typeof updateUserSchema>;
-export type UserIdValidation = z.infer<typeof userIdSchema>; 

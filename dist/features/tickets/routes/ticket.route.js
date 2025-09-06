@@ -1,0 +1,13 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const ticket_Controller_1 = require("../controllers/ticket.Controller");
+const authMiddleware_1 = require("../../../middlewares/authMiddleware");
+const ticketRoutes = (0, express_1.Router)();
+const controller = new ticket_Controller_1.TicketController();
+ticketRoutes.get("/", authMiddleware_1.authMiddleware, controller.getTickets);
+ticketRoutes.get("/:id", authMiddleware_1.authMiddleware, controller.getTicket);
+ticketRoutes.post("/:alert_id", authMiddleware_1.authMiddleware, controller.createTicket);
+ticketRoutes.patch("/:id", authMiddleware_1.authMiddleware, controller.updateTicket);
+ticketRoutes.delete("/:id", authMiddleware_1.authMiddleware, controller.deleteTicket);
+exports.default = ticketRoutes;

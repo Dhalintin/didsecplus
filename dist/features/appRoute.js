@@ -1,0 +1,20 @@
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = __importDefault(require("express"));
+const appRouter = express_1.default.Router();
+const auth_route_1 = __importDefault(require("./authentication/routes/auth.route"));
+// import alertRoutes from "./alerts/routes/alert.route";
+// import ticketRoutes from "./tickets/routes/ticket.route";
+// import locationRoutes from "./locations/routes/location.route";
+// import analyticsRoute from "./analytics/routes";
+// import userRoute from "./users/routes/user.route";
+appRouter.use("/auth", auth_route_1.default);
+// appRouter.use("/alerts", alertRoutes);
+// appRouter.use("/tickets", ticketRoutes);
+// appRouter.use("/locations", locationRoutes);
+// appRouter.use("/analytics", analyticsRoute);
+// appRouter.use("/users", userRoute);
+exports.default = appRouter;

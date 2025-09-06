@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import { tokenService } from "../utils/jwt";
+import jwt from "jsonwebtoken";
 
-// Extend Express Request interface to include 'user'
 declare global {
   namespace Express {
     interface Request {
@@ -30,19 +30,24 @@ export const authMiddleware = (
   }
 };
 
-
-export const recruiterOnlyMiddleware = (
+export const adminAuthMiddleware = (
   req: Request,
   res: Response,
   next: NextFunction
 ): void => {
   if (!req.user) {
-    res.status(401).json({ success: false, message: "Unauthorized: User not found in request" });
+    res.status(401).json({
+      success: false,
+      message: "Unauthorized: User not found in request",
+    });
     return;
   }
 
-  if (req.user.userType !== "recruiter") {
-    res.status(403).json({ success: false, message: "Forbidden: Only recruiters are allowed" });
+  if (req.user.role !== "admin" && req.user.role !== "superAdmin") {
+    res.status(403).json({
+      success: false,
+      message: "Forbidden: Only admins are allowed",
+    });
     return;
   }
 

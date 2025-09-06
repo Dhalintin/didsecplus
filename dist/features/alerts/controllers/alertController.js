@@ -1,0 +1,120 @@
+"use strict";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.AlertController = void 0;
+const alert_service_1 = require("../services/alert.service");
+const response_util_1 = __importDefault(require("../../../utils/helpers/response.util"));
+const alert_validation_1 = require("../../../validations/alert.validation");
+const registerUser_1 = require("../../authentication/services/registerUser");
+const alertService = new alert_service_1.AlertService();
+class AlertController {
+    // Create Alert
+    createAlert(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const { error } = alert_validation_1.alertSchema.validate(req.body);
+                if (error) {
+                    new response_util_1.default(400, res, error.details[0].message);
+                    return;
+                }
+                const data = req.body;
+                const alert = yield alertService.createAlert(req.user.userId, data);
+                new response_util_1.default(201, res, "Alert created successfully", alert);
+                return;
+            }
+            catch (err) {
+                const status = err.statusCode || 500;
+                new response_util_1.default(status, res, err.message);
+            }
+        });
+    }
+    // Get alerts
+    getAlerts(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const { page, page_size, status, state, lga, from, to } = req.query;
+            const data = {
+                page: typeof page === "string" ? parseInt(page, 10) : Number(page),
+                page_size: typeof page_size === "string"
+                    ? parseInt(page_size, 10)
+                    : Number(page_size) || 20,
+                state: typeof state === "string" ? state : null,
+                status: typeof status === "string" ? status : null,
+                lga: typeof lga === "string" ? lga : null,
+                from: typeof from === "string" ? from : null,
+                to: typeof to === "string" ? to : null,
+            };
+            try {
+                const alerts = yield alertService.getAlerts(data);
+                new response_util_1.default(201, res, "Alert retrieved successfully", alerts);
+            }
+            catch (err) {
+                const status = err.statusCode || 500;
+                new response_util_1.default(status, res, err);
+            }
+        });
+    }
+    // Get alert by ID
+    getAlertById(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const id = req.params.id;
+                const alert = yield alertService.getAlertById(id);
+                new response_util_1.default(201, res, "Alert retrieved successfully", alert);
+            }
+            catch (err) {
+                const status = err.statusCode || 500;
+                new response_util_1.default(status, res, err);
+            }
+        });
+    }
+    // Update job alert
+    updateAlert(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const updatedata = {
+                    id: req.params.id,
+                    data: req.body,
+                };
+                const alert = yield alertService.updateAlert(updatedata);
+                new response_util_1.default(200, res, "Updated successfully!", alert);
+            }
+            catch (err) {
+                console.log("Failed to update application: ", err);
+                const status = err.status || 500;
+                new response_util_1.default(status, res, err.message);
+            }
+        });
+    }
+    // Delete alert
+    deleteAlert(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const userId = req.user.userId;
+                const user = yield registerUser_1.AuthService.getUserById(userId);
+                if (user.role !== "admin") {
+                    new response_util_1.default(200, res, "You are not authorized to delete this alert");
+                    return;
+                }
+                yield alertService.deleteAlert(req.params.id);
+                new response_util_1.default(200, res, "Application deleted successfully");
+            }
+            catch (err) {
+                console.log("Failed to delete application: ", err);
+                const status = err.statusCode || 500;
+                new response_util_1.default(status, res, err.message);
+            }
+        });
+    }
+}
+exports.AlertController = AlertController;
