@@ -24,7 +24,7 @@ AuthService.getExistingUser = (email, phone) => __awaiter(void 0, void 0, void 0
     if (existingUserByEmail)
         return { user: existingUserByEmail, conflict: "email" };
     if (phone) {
-        const existingUserByPhone = yield prisma.user.findUnique({
+        const existingUserByPhone = yield prisma.user.findFirst({
             where: { phone },
         });
         if (existingUserByPhone)

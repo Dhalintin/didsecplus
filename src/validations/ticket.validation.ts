@@ -5,4 +5,6 @@ export const ticketSchema = Joi.object({
   description: Joi.string().optional(),
   status: Joi.string().optional(),
   priority: Joi.string().required(),
+  alert_id: Joi.string().required(),
+  assigned_to: Joi.string().required(),
 });

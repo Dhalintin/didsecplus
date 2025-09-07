@@ -17,6 +17,7 @@ const alert_service_1 = require("../services/alert.service");
 const response_util_1 = __importDefault(require("../../../utils/helpers/response.util"));
 const alert_validation_1 = require("../../../validations/alert.validation");
 const registerUser_1 = require("../../authentication/services/registerUser");
+const getLocation_1 = require("../../../utils/getLocation");
 const alertService = new alert_service_1.AlertService();
 class AlertController {
     // Create Alert
@@ -28,7 +29,14 @@ class AlertController {
                     new response_util_1.default(400, res, error.details[0].message);
                     return;
                 }
-                const data = req.body;
+                const responseData = req.body;
+                const coord = {
+                    latitude: Number(responseData.latitude),
+                    longitude: Number(responseData.longitude),
+                };
+                const { state, lga } = yield (0, getLocation_1.getLocationDetails)(coord);
+                const data = Object.assign(Object.assign({}, responseData), { latitude: Number(responseData.latitude), longitude: Number(responseData.longitude), state,
+                    lga });
                 const alert = yield alertService.createAlert(req.user.userId, data);
                 new response_util_1.default(201, res, "Alert created successfully", alert);
                 return;
@@ -48,11 +56,11 @@ class AlertController {
                 page_size: typeof page_size === "string"
                     ? parseInt(page_size, 10)
                     : Number(page_size) || 20,
-                state: typeof state === "string" ? state : null,
-                status: typeof status === "string" ? status : null,
-                lga: typeof lga === "string" ? lga : null,
-                from: typeof from === "string" ? from : null,
-                to: typeof to === "string" ? to : null,
+                state: typeof state === "string" ? state : undefined,
+                status: typeof status === "string" ? status : undefined,
+                lga: typeof lga === "string" ? lga : undefined,
+                from: typeof from === "string" ? from : undefined,
+                to: typeof to === "string" ? to : undefined,
             };
             try {
                 const alerts = yield alertService.getAlerts(data);
@@ -64,7 +72,7 @@ class AlertController {
             }
         });
     }
-    // Get alert by ID
+    // // Get alert by ID
     getAlertById(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
@@ -78,7 +86,7 @@ class AlertController {
             }
         });
     }
-    // Update job alert
+    // // Update job alert
     updateAlert(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
@@ -96,7 +104,7 @@ class AlertController {
             }
         });
     }
-    // Delete alert
+    // // Delete alert
     deleteAlert(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             try {

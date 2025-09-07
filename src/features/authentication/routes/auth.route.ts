@@ -1,16 +1,17 @@
 import express from "express";
 
-import { AuthController } from "../controllers/registerUser";
+import { RegisterUserController } from "../controllers/registerUser";
 import { authMiddleware } from "../../../middlewares/authMiddleware";
+import { LoginController } from "../controllers/loginUser";
 // import { ChangePasswordController } from "../controllers/changePassword";
 
 const authRouter = express.Router();
 
-authRouter.post("/register", AuthController.register);
+authRouter.post("/register", RegisterUserController.register);
 
-authRouter.post("/login", AuthController.login);
+authRouter.post("/login", LoginController.login);
 
-authRouter.get("/logout", AuthController.logout);
+// authRouter.get("/logout", AuthController.logout);
 
 // authRouter.patch(
 //   "/change-password",

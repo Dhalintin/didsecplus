@@ -1,9 +1,8 @@
 export interface User {
   email: string;
-  lastname: String;
-  firstname: String;
+  username: string | null;
+  name: string | null;
   password: String;
-  othername: String | null;
   role: String | null;
   phone: String;
 }

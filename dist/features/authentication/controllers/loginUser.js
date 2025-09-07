@@ -12,45 +12,46 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.RegisterUserController = void 0;
+exports.LoginController = void 0;
 const jwt_1 = require("../../../utils/jwt");
 const registerUser_1 = require("../services/registerUser");
 const hash_1 = require("../../../utils/hash");
-const register_validation_1 = __importDefault(require("../../../validations/register.validation"));
+const login_validation_1 = require("../../../validations/login.validation");
 const response_util_1 = __importDefault(require("../../../utils/helpers/response.util"));
-class RegisterUserController {
-    static register(req, res) {
+class LoginController {
+    static login(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const { error } = register_validation_1.default.validate(req.body);
+                const { error } = login_validation_1.loginSchema.validate(req.body);
                 if (error) {
-                    res.status(400).json({ error: error.details[0].message });
+                    new response_util_1.default(400, res, error.details[0].message);
                     return;
                 }
-                const { email, phone, password } = req.body;
-                const requestData = req.body;
-                const existingUser = yield registerUser_1.AuthService.getExistingUser(email, phone);
-                if (existingUser) {
-                    new response_util_1.default(500, res, `${existingUser.conflict} already in use!`);
+                const { email, password } = req.body;
+                const user = yield registerUser_1.AuthService.getUserByEmail(email);
+                if (!user) {
+                    new response_util_1.default(404, res, "User Email or Password incorrect!");
                     return;
                 }
-                const hashedPassword = yield (0, hash_1.hashPassword)(password);
-                const userData = Object.assign(Object.assign({}, requestData), { password: hashedPassword });
-                const user = yield registerUser_1.AuthService.registerUser(userData);
-                const responseUserData = {
+                if (!user.password ||
+                    (user.password && !(yield (0, hash_1.comparePassword)(password, user.password)))) {
+                    new response_util_1.default(404, res, "User Email or Password incorrect!");
+                    return;
+                }
+                const token = jwt_1.tokenService.generateToken(user.id, user.role);
+                const userData = {
                     id: user.id,
                     email: user.email,
                     username: user.username,
                     name: user.name,
                     role: user.role,
                 };
-                const token = jwt_1.tokenService.generateToken(user.id, user.role);
-                const responseData = {
+                const responData = {
                     access_token: token,
                     expires_in: 3600,
-                    user: responseUserData,
+                    user: userData,
                 };
-                new response_util_1.default(200, res, `Registration successful!`, responseData);
+                new response_util_1.default(200, res, "Login Successful!", responData);
                 return;
             }
             catch (err) {
@@ -75,4 +76,4 @@ class RegisterUserController {
         });
     }
 }
-exports.RegisterUserController = RegisterUserController;
+exports.LoginController = LoginController;

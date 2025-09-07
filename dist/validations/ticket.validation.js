@@ -10,4 +10,6 @@ exports.ticketSchema = joi_1.default.object({
     description: joi_1.default.string().optional(),
     status: joi_1.default.string().optional(),
     priority: joi_1.default.string().required(),
+    alert_id: joi_1.default.string().required(),
+    assigned_to: joi_1.default.string().required(),
 });

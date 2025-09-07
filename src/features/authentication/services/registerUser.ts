@@ -12,7 +12,7 @@ export class AuthService {
       return { user: existingUserByEmail, conflict: "email" };
 
     if (phone) {
-      const existingUserByPhone = await prisma.user.findUnique({
+      const existingUserByPhone = await prisma.user.findFirst({
         where: { phone },
       });
 

@@ -5,11 +5,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const registerUser_1 = require("../controllers/registerUser");
+const loginUser_1 = require("../controllers/loginUser");
 // import { ChangePasswordController } from "../controllers/changePassword";
 const authRouter = express_1.default.Router();
-authRouter.post("/register", registerUser_1.AuthController.register);
-authRouter.post("/login", registerUser_1.AuthController.login);
-authRouter.get("/logout", registerUser_1.AuthController.logout);
+authRouter.post("/register", registerUser_1.RegisterUserController.register);
+authRouter.post("/login", loginUser_1.LoginController.login);
+// authRouter.get("/logout", AuthController.logout);
 // authRouter.patch(
 //   "/change-password",
 //   authMiddleware,

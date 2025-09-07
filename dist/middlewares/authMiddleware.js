@@ -23,7 +23,7 @@ const adminAuthMiddleware = (req, res, next) => {
     if (!req.user) {
         res.status(401).json({
             success: false,
-            message: "Unauthorized: User not found in request",
+            message: "Unauthorized!",
         });
         return;
     }
