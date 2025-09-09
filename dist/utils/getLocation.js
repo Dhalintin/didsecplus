@@ -19,37 +19,32 @@ const client_1 = require("@prisma/client");
 dotenv_1.default.config();
 const prisma = new client_1.PrismaClient();
 const getLocationDetails = (input) => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        const { latitude, longitude } = input;
-        const email = process.env.NOMINATIM_EMAIL;
-        if (!email) {
-            throw new Error("Nominatim email is missing in environment variables");
-        }
-        const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=10&addressdetails=1&email=${encodeURIComponent(email)}`;
-        const response = yield axios_1.default.get(url, {
-            headers: {
-                "User-Agent": "didsecplus/1.0 (your.email@example.com)",
-            },
-        });
-        if (response.data.error) {
-            throw new Error(`Nominatim API error: ${response.data.error}`);
-        }
-        const address = response.data.address;
-        const state = address.state || address.region || null;
-        const lga = address.county ||
-            address.district ||
-            address.city ||
-            address.municipality ||
-            null; // e.g., "Ikeja"
-        return {
-            state,
-            lga,
-            formattedAddress: response.data.display_name || null,
-        };
+    const { latitude, longitude } = input;
+    const email = process.env.NOMINATIM_EMAIL;
+    if (!email) {
+        throw new Error("Nominatim email is missing in environment variables");
     }
-    catch (error) {
-        console.error("Error in getLocationDetails:", error);
-        throw new Error(`Failed to fetch location details: ${error.message}`);
+    const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=10&addressdetails=1&email=${encodeURIComponent(email)}`;
+    const response = yield axios_1.default.get(url, {
+        headers: {
+            "User-Agent": "didsecplus/1.0 (your.email@example.com)",
+        },
+    });
+    if (response.data.error) {
+        return null;
+        // throw new Error(`Nominatim API error: ${response.data.error}`);
     }
+    const address = response.data.address;
+    const state = address.state || address.region || null;
+    const lga = address.county ||
+        address.district ||
+        address.city ||
+        address.municipality ||
+        null; // e.g., "Ikeja"
+    return {
+        stateName: state,
+        lgaName: lga,
+        formattedAddress: response.data.display_name || null,
+    };
 });
 exports.getLocationDetails = getLocationDetails;

@@ -24,6 +24,8 @@ class AlertController {
     createAlert(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
+                let state = req.body.state;
+                let lga = req.body.lga;
                 const { error } = alert_validation_1.alertSchema.validate(req.body);
                 if (error) {
                     new response_util_1.default(400, res, error.details[0].message);
@@ -34,7 +36,14 @@ class AlertController {
                     latitude: Number(responseData.latitude),
                     longitude: Number(responseData.longitude),
                 };
-                const { state, lga } = yield (0, getLocation_1.getLocationDetails)(coord);
+                if (!state || !lga) {
+                    const locationData = yield (0, getLocation_1.getLocationDetails)(coord);
+                    if (locationData) {
+                        const { stateName, lgaName } = locationData;
+                        state = stateName;
+                        lga = lgaName;
+                    }
+                }
                 const data = Object.assign(Object.assign({}, responseData), { latitude: Number(responseData.latitude), longitude: Number(responseData.longitude), state,
                     lga });
                 const alert = yield alertService.createAlert(req.user.userId, data);

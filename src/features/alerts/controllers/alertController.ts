@@ -16,6 +16,8 @@ export class AlertController {
   // Create Alert
   async createAlert(req: Request, res: Response) {
     try {
+      let state = req.body.state;
+      let lga = req.body.lga;
       const { error } = alertSchema.validate(req.body);
       if (error) {
         new CustomResponse(400, res, error.details[0].message);
@@ -27,7 +29,14 @@ export class AlertController {
         longitude: Number(responseData.longitude),
       };
 
-      const { state, lga } = await getLocationDetails(coord);
+      if (!state || !lga) {
+        const locationData = await getLocationDetails(coord);
+        if (locationData) {
+          const { stateName, lgaName } = locationData;
+          state = stateName;
+          lga = lgaName;
+        }
+      }
       const data: AlertDTO = {
         ...responseData,
         latitude: Number(responseData.latitude),
