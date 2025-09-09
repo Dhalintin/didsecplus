@@ -16,7 +16,6 @@ exports.TicketController = void 0;
 const ticket_1 = require("../services/ticket");
 const ticket_validation_1 = require("../../../validations/ticket.validation");
 const response_util_1 = __importDefault(require("../../../utils/helpers/response.util"));
-const registerUser_1 = require("../../authentication/services/registerUser");
 const ticketService = new ticket_1.TicketService();
 class TicketController {
     createTicket(req, res) {
@@ -27,16 +26,15 @@ class TicketController {
                     new response_util_1.default(400, res, error.details[0].message);
                     return;
                 }
-                const alert_id = req.params.alert_id;
-                const { title, description, priority, assigned_to } = req.body;
+                const { title, description, priority, assigned_to, alert_Id } = req.body;
                 const data = {
                     title,
                     description,
                     priority,
-                    alert_id,
+                    alert_Id,
                     assigned_to,
                 };
-                const result = yield ticketService.createTicket(alert_id, data);
+                const result = yield ticketService.createTicket(data);
                 new response_util_1.default(201, res, "Ticket created successfully", result);
                 return;
             }
@@ -62,17 +60,18 @@ class TicketController {
     getTickets(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const { page, page_size, status, assigned_to, created_by, alert_id } = req.query;
+                const { page, page_size, status, assigned_to, alert_id, created_by } = req.query;
                 const query = {
                     page: typeof page === "string" ? parseInt(page, 10) : Number(page),
                     page_size: typeof page_size === "string"
                         ? parseInt(page_size, 10)
                         : Number(page_size) || 20,
-                    status: typeof status === "string" ? status : null,
-                    assigned_to: typeof assigned_to === "string" ? assigned_to : null,
-                    created_by: typeof created_by === "string" ? created_by : null,
-                    alert_id: typeof alert_id === "string" ? alert_id : null,
+                    status: typeof status === "string" ? status : undefined,
+                    assigned_to: typeof assigned_to === "string" ? assigned_to : undefined,
+                    created_by: typeof created_by === "string" ? created_by : undefined,
+                    alert_Id: typeof alert_id === "string" ? alert_id : undefined,
                 };
+                console.log(query);
                 const tickets = yield ticketService.getTickets(query);
                 new response_util_1.default(200, res, "Ticket created successfully!", tickets);
                 return;
@@ -87,7 +86,8 @@ class TicketController {
     updateTicket(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const result = yield ticketService.updateTicket(req.params.id, req.body);
+                const UpdateData = req.body;
+                const result = yield ticketService.updateTicket(req.params.id, UpdateData);
                 new response_util_1.default(200, res, "Ticket updated successfully", result);
                 return;
             }
@@ -101,11 +101,6 @@ class TicketController {
     deleteTicket(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const user = yield registerUser_1.AuthService.getUserById(req.user.userId);
-                if (user.role !== "admin") {
-                    new response_util_1.default(500, res, "You are not authorized to delete this alert");
-                    return;
-                }
                 yield ticketService.deleteTicket(req.params.id);
                 new response_util_1.default(200, res, "Ticket deleted successfully");
                 return;

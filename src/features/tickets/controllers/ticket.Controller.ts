@@ -3,7 +3,11 @@ import { TicketService } from "../services/ticket";
 import { ticketSchema } from "../../../validations/ticket.validation";
 import CustomResponse from "../../../utils/helpers/response.util";
 import { AuthService } from "../../authentication/services/registerUser";
-import { CreateTicketDTO } from "../dtos/ticket.dto";
+import {
+  CreateTicketDTO,
+  GetTicketDTO,
+  UpdateTicketDTO,
+} from "../dtos/ticket.dto";
 const ticketService = new TicketService();
 
 export class TicketController {
@@ -14,17 +18,17 @@ export class TicketController {
         new CustomResponse(400, res, error.details[0].message);
         return;
       }
-      const alert_id = req.params.alert_id;
-      const { title, description, priority, assigned_to } = req.body;
+
+      const { title, description, priority, assigned_to, alert_Id } = req.body;
       const data: CreateTicketDTO = {
         title,
         description,
         priority,
-        alert_id,
+        alert_Id,
         assigned_to,
       };
 
-      const result = await ticketService.createTicket(alert_id, data);
+      const result = await ticketService.createTicket(data);
       new CustomResponse(201, res, "Ticket created successfully", result);
       return;
     } catch (error: any) {
@@ -46,20 +50,21 @@ export class TicketController {
 
   async getTickets(req: Request, res: Response) {
     try {
-      const { page, page_size, status, assigned_to, created_by, alert_id } =
+      const { page, page_size, status, assigned_to, alert_id, created_by } =
         req.query;
 
-      const query = {
+      const query: GetTicketDTO = {
         page: typeof page === "string" ? parseInt(page, 10) : Number(page),
         page_size:
           typeof page_size === "string"
             ? parseInt(page_size, 10)
             : Number(page_size) || 20,
-        status: typeof status === "string" ? status : null,
-        assigned_to: typeof assigned_to === "string" ? assigned_to : null,
-        created_by: typeof created_by === "string" ? created_by : null,
-        alert_id: typeof alert_id === "string" ? alert_id : null,
+        status: typeof status === "string" ? status : undefined,
+        assigned_to: typeof assigned_to === "string" ? assigned_to : undefined,
+        created_by: typeof created_by === "string" ? created_by : undefined,
+        alert_Id: typeof alert_id === "string" ? alert_id : undefined,
       };
+      console.log(query);
 
       const tickets = await ticketService.getTickets(query);
       new CustomResponse(200, res, "Ticket created successfully!", tickets);
@@ -73,7 +78,11 @@ export class TicketController {
 
   async updateTicket(req: Request, res: Response) {
     try {
-      const result = await ticketService.updateTicket(req.params.id, req.body);
+      const UpdateData: UpdateTicketDTO = req.body;
+      const result = await ticketService.updateTicket(
+        req.params.id,
+        UpdateData
+      );
       new CustomResponse(200, res, "Ticket updated successfully", result);
       return;
     } catch (err: any) {
@@ -85,15 +94,6 @@ export class TicketController {
 
   async deleteTicket(req: Request, res: Response) {
     try {
-      const user = await AuthService.getUserById(req.user.userId);
-      if (user.role !== "admin") {
-        new CustomResponse(
-          500,
-          res,
-          "You are not authorized to delete this alert"
-        );
-        return;
-      }
       await ticketService.deleteTicket(req.params.id);
       new CustomResponse(200, res, "Ticket deleted successfully");
       return;

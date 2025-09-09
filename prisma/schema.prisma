@@ -103,9 +103,9 @@ model Ticket {
 
 model State {
   id        String    @id @map("_id")
-  name      String
+  name      String    @unique
   capital   String
-  centroid  Json      // Array of [latitude, longitude] in WGS84, e.g., [5.4527, 7.5248]
+  centroid  Json      
   lgas      Lga[]     @relation("StateLga")
 }
 

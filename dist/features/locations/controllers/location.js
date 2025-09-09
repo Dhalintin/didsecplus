@@ -16,6 +16,7 @@ exports.LocationController = void 0;
 const location_1 = require("../services/location");
 const response_util_1 = __importDefault(require("../../../utils/helpers/response.util"));
 const location_validation_1 = require("../../../validations/location.validation");
+const seed_db_1 = require("../../../utils/seed/seed.db");
 class LocationController {
     getStates(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -74,6 +75,20 @@ class LocationController {
                     message: error.message,
                 });
                 return;
+            }
+        });
+    }
+    updateStateDB(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                console.log("Seeding database with state and LGA data...");
+                const upsertedState = yield seed_db_1.StateDBSeed.allStateSeed();
+                console.log("Upserted successfully");
+                new response_util_1.default(201, res, "Updated successfully", upsertedState);
+            }
+            catch (err) {
+                const status = err.statusCode || 500;
+                new response_util_1.default(status, res, status.message);
             }
         });
     }

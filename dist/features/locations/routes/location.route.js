@@ -9,6 +9,7 @@ const location_1 = require("../controllers/location");
 const locationRoutes = express_1.default.Router();
 const locationController = new location_1.LocationController();
 locationRoutes.get("/states", authMiddleware_1.authMiddleware, locationController.getStates);
+locationRoutes.post("/states/update", authMiddleware_1.authMiddleware, locationController.updateStateDB);
 locationRoutes.get("/states/:stateId/lgas", authMiddleware_1.authMiddleware, locationController.getLGAs);
 locationRoutes.get("/lgas", authMiddleware_1.authMiddleware, locationController.filterLGAGeojson);
 exports.default = locationRoutes;

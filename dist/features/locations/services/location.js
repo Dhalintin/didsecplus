@@ -28,44 +28,14 @@ LocationService.getStates = () => __awaiter(void 0, void 0, void 0, function* ()
         pipeline,
         cursor: {},
     });
-    return ((_b = result === null || result === void 0 ? void 0 : result.cursor) === null || _b === void 0 ? void 0 : _b.firstBatch) || [];
+    const states = ((_b = result === null || result === void 0 ? void 0 : result.cursor) === null || _b === void 0 ? void 0 : _b.firstBatch) || [];
+    return states;
 });
 LocationService.getLGAsByState = (stateId) => __awaiter(void 0, void 0, void 0, function* () {
-    const pipeline = [
-        { $match: { stateId } },
-        { $sort: { name: 1 } },
-        {
-            $project: {
-                _id: 0,
-                type: { $literal: "Feature" },
-                properties: { id: "$_id", name: 1, stateId: 1 },
-                geometry: 1,
-            },
-        },
-        {
-            $group: {
-                _id: null,
-                features: { $push: "$$ROOT" },
-            },
-        },
-        {
-            $project: {
-                _id: 0,
-                type: { $literal: "FeatureCollection" },
-                features: 1,
-            },
-        },
-    ];
-    const result = yield prisma.$runCommandRaw({
-        aggregate: "Lga",
-        pipeline,
-        cursor: {},
+    return yield prisma.lga.findMany({
+        where: { stateId },
+        orderBy: { name: "asc" },
     });
-    const featureCollection = result.cursor.firstBatch[0] || {
-        type: "FeatureCollection",
-        features: [],
-    };
-    return featureCollection;
 });
 LocationService.filterLGAGeojson = (state, bboxCoords) => __awaiter(void 0, void 0, void 0, function* () {
     const matchStage = {};

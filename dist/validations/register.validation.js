@@ -4,25 +4,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const joi_1 = __importDefault(require("joi"));
-// export const registerSchema = Joi.object({
-//   email: Joi.string().email().required(),
-//   firstname: Joi.string().required(),
-//   lastname: Joi.string().required(),
-//   othername: Joi.string().optional(),
-//   password: Joi.string()
-//     .min(8)
-//     .pattern(new RegExp("^(?=.*[a-z])(?=.*[A-Z])(?=.*[^a-zA-Z0-9])"))
-//     .required()
-//     .messages({
-//       "string.pattern.base":
-//         "Password must contain at least one uppercase letter, one lowercase letter, and one special character.",
-//     }),
-//   phone: Joi.string().required(),
-//   role: Joi.string().valid("superAdmin", "admin", "user").optional().messages({
-//     "any.only": "role must be either 'superAdmin', 'admin' or 'user' .",
-//   }),
-// });
-const phoneRegex = /^\+?[1-9]\d{1,14}$/;
 const userSchema = joi_1.default.object({
     email: joi_1.default.string().email().required().messages({
         "string.email": "email must be a valid email address",

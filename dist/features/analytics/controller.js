@@ -21,23 +21,36 @@ class AnalyticsController {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 const { from, to, role } = req.query;
-                if (!from || !to) {
-                    new response_util_1.default(400, res, "Invalid user ID");
-                    return;
-                }
-                const startDate = (0, date_fns_1.parseISO)(from);
-                const endDate = (0, date_fns_1.parseISO)(to);
-                if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
-                    new response_util_1.default(400, res, "Invalid date format");
-                    return;
-                }
-                const roleFilter = role === "all" ? {} : { role: role };
+                let startDate;
+                let endDate;
+                let formatedStart;
+                let formatedEnd;
+                // if (!from || !to) {
+                //   new CustomResponse(400, res, "Invalid timeframe");
+                //   return;
+                // }
+                if (from)
+                    startDate = (0, date_fns_1.parseISO)(from);
+                if (to)
+                    endDate = (0, date_fns_1.parseISO)(to);
+                // if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+                //   new CustomResponse(400, res, "Invalid date format");
+                //   return;
+                // }
+                const roleFilter = role === "all" || undefined ? {} : { role: role };
                 if (role !== "all" &&
-                    !["superAdmin", "admin", "user"].includes(role)) {
+                    !["superAdmin", "admin", "user"].includes(role) &&
+                    undefined) {
                     new response_util_1.default(400, res, "Invalid role");
                     return;
                 }
-                const analytics = yield service_1.AnalyticsService.getUserAnalytics(roleFilter, (0, date_fns_1.format)(startDate, "yyyy-MM-dd"), (0, date_fns_1.format)(endDate, "yyyy-MM-dd"));
+                if (startDate) {
+                    formatedStart = (0, date_fns_1.format)(startDate, "yyyy-MM-dd");
+                }
+                if (endDate) {
+                    formatedEnd = (0, date_fns_1.format)(endDate, "yyyy-MM-dd");
+                }
+                const analytics = yield service_1.AnalyticsService.getUserAnalytics(roleFilter, formatedStart, formatedEnd);
                 new response_util_1.default(200, res, "", analytics);
             }
             catch (error) {
@@ -51,22 +64,23 @@ class AnalyticsController {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 const { from, to, state, lga } = req.query;
-                if (!from || !to) {
-                    new response_util_1.default(400, res, "Missing from or to date");
-                    return;
-                }
-                const startDate = (0, date_fns_1.parseISO)(from);
-                const endDate = (0, date_fns_1.parseISO)(to);
-                if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+                let startDate;
+                let endDate;
+                // if (!from || !to) {
+                //   new CustomResponse(400, res, "Missing from or to date");
+                //   return;
+                // }
+                if (from)
+                    startDate = (0, date_fns_1.parseISO)(from);
+                if (to)
+                    endDate = (0, date_fns_1.parseISO)(to);
+                if ((startDate && isNaN(startDate.getTime())) ||
+                    (endDate && isNaN(endDate.getTime()))) {
                     new response_util_1.default(400, res, "Invalid date format");
                     return;
                 }
-                const analytics = yield service_1.AnalyticsService.getAlertAnalytics({
-                    startDate,
-                    endDate,
-                    state,
-                    lga,
-                });
+                const data = [startDate, endDate, state, lga];
+                const analytics = yield service_1.AnalyticsService.getAlertAnalytics(data);
                 new response_util_1.default(201, res, "Missing from or to date", analytics);
                 return;
             }

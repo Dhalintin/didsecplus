@@ -1,4 +1,4 @@
-[
+export const allStates = [
   {
     id: "NG-AB",
     name: "Abia",

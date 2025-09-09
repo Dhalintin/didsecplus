@@ -1,14 +1,15 @@
-import { PrismaClient, Prisma } from "@prisma/client";
-import { CreateTicketDTO } from "../dtos/ticket.dto";
+import { PrismaClient, Prisma, Priority } from "@prisma/client";
+import { CreateTicketDTO, GetTicketDTO } from "../dtos/ticket.dto";
 
 const prisma = new PrismaClient();
 
 export class TicketService {
-  async createTicket(alert_Id: string, data: CreateTicketDTO) {
+  async createTicket(data: CreateTicketDTO) {
+    const { alert_Id, ...rest } = data;
     return await prisma.ticket.create({
       data: {
-        alert_Id,
-        ...data,
+        ...rest,
+        alert: { connect: { id: alert_Id } },
       },
     });
   }
@@ -18,11 +19,15 @@ export class TicketService {
       where: {
         id,
       },
+      include: {
+        alert: true,
+      },
     });
   }
 
-  async getTickets(query: any) {
-    const { page, page_size, status, assigned_to, created_by } = query;
+  async getTickets(query: GetTicketDTO) {
+    const { page, page_size, status, assigned_to, created_by, alert_Id } =
+      query;
 
     const limit = page_size || 20;
     const skip = page ? (page - 1) * limit : 0;
@@ -31,9 +36,10 @@ export class TicketService {
     if (status) matchStage.status = status;
     if (assigned_to) matchStage.assigned_to = assigned_to;
     if (created_by) matchStage.created_by = created_by;
+    if (alert_Id) matchStage.alert_Id = alert_Id; // Fixed: Should be alert_Id, not created_by
 
     const pipeline = [
-      { $match: matchStage },
+      { $match: Object.keys(matchStage).length > 0 ? matchStage : {} },
       {
         $lookup: {
           from: "Alert",
@@ -48,18 +54,17 @@ export class TicketService {
       { $limit: limit },
     ];
 
-    const tickets = await prisma.$runCommandRaw({
+    const tickets: any = await prisma.$runCommandRaw({
       aggregate: "Ticket",
       pipeline,
       cursor: {},
     });
 
-    const countPipeline = [{ $match: matchStage }, { $count: "total" }];
-    if (Object.keys(matchStage).length === 0) {
-      countPipeline.shift();
-      countPipeline.unshift({ $match: {} });
-    }
-    const countResult = await prisma.$runCommandRaw({
+    const countPipeline = [
+      { $match: Object.keys(matchStage).length > 0 ? matchStage : {} },
+      { $count: "total" },
+    ];
+    const countResult: any = await prisma.$runCommandRaw({
       aggregate: "Ticket",
       pipeline: countPipeline,
       cursor: {},
@@ -67,8 +72,38 @@ export class TicketService {
 
     const total = countResult.cursor?.firstBatch[0]?.total || 0;
 
+    // Transform the data to the desired format
+    const transformedData = tickets.cursor.firstBatch.map((ticket: any) => ({
+      id: ticket._id?.$oid || ticket._id,
+      created_at: ticket.created_at?.$date || ticket.created_at,
+      updated_at: ticket.updated_at?.$date || ticket.updated_at,
+      alert_Id: ticket.alert_Id?.$oid || ticket.alert_Id,
+      created_by: ticket.created_by?.$oid || ticket.created_by,
+      title: ticket.title,
+      status: ticket.status,
+      priority: ticket.priority,
+      alert: ticket.alert
+        ? {
+            id: ticket.alert._id?.$oid || ticket.alert._id,
+            userId: ticket.alert.userId?.$oid || ticket.alert.userId,
+            title: ticket.alert.title,
+            description: ticket.alert.description,
+            status: ticket.alert.status,
+            source: ticket.alert.source,
+            latitude: ticket.alert.latitude,
+            longitude: ticket.alert.longitude,
+            state: ticket.alert.state,
+            lga: ticket.alert.lga,
+            created_at:
+              ticket.alert.created_at?.$date || ticket.alert.created_at,
+            updated_at:
+              ticket.alert.updated_at?.$date || ticket.alert.updated_at,
+          }
+        : null,
+    }));
+
     return {
-      data: tickets.cursor.firstBatch,
+      data: transformedData,
       meta: {
         page: page || 1,
         page_size: limit,
@@ -78,7 +113,7 @@ export class TicketService {
   }
 
   async updateTicket(id: string, data: any) {
-    return prisma.ticket.update({
+    return await prisma.ticket.update({
       where: { id },
       data,
     });
