@@ -1,4 +1,4 @@
-import jwt, { JwtPayload } from "jsonwebtoken";
+import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 
 dotenv.config();
@@ -22,7 +22,7 @@ class TokenService {
     return jwt.sign({ userId, role }, jwtSecret, { expiresIn: "14d" });
   }
 
-  verifyToken(token: string): string | JwtPayload {
+  verifyToken(token: string): string | any {
     return jwt.verify(token, jwtSecret);
   }
 }
