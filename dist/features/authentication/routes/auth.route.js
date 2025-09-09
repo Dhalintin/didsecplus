@@ -10,10 +10,4 @@ const loginUser_1 = require("../controllers/loginUser");
 const authRouter = express_1.default.Router();
 authRouter.post("/register", registerUser_1.RegisterUserController.register);
 authRouter.post("/login", loginUser_1.LoginController.login);
-// authRouter.get("/logout", AuthController.logout);
-// authRouter.patch(
-//   "/change-password",
-//   authMiddleware,
-//   ChangePasswordController.changePassword
-// );
 exports.default = authRouter;

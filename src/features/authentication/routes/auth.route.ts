@@ -11,12 +11,4 @@ authRouter.post("/register", RegisterUserController.register);
 
 authRouter.post("/login", LoginController.login);
 
-// authRouter.get("/logout", AuthController.logout);
-
-// authRouter.patch(
-//   "/change-password",
-//   authMiddleware,
-//   ChangePasswordController.changePassword
-// );
-
 export default authRouter;
