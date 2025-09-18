@@ -11,10 +11,12 @@ const ticket_route_1 = __importDefault(require("./tickets/routes/ticket.route"))
 const location_route_1 = __importDefault(require("./locations/routes/location.route"));
 const routes_1 = __importDefault(require("./analytics/routes"));
 const user_route_1 = __importDefault(require("./users/routes/user.route"));
+const report_route_1 = __importDefault(require("./reports/routes/report.route"));
 appRouter.use("/auth", auth_route_1.default);
 appRouter.use("/alerts", alert_route_1.default);
 appRouter.use("/tickets", ticket_route_1.default);
 appRouter.use("/locations", location_route_1.default);
 appRouter.use("/analytics", routes_1.default);
 appRouter.use("/users", user_route_1.default);
+appRouter.use("/reports", report_route_1.default);
 exports.default = appRouter;
