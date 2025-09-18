@@ -13,7 +13,7 @@ if (!jwtSecret) {
 }
 class TokenService {
     generateToken(userId, role) {
-        return jsonwebtoken_1.default.sign({ userId, role }, jwtSecret, { expiresIn: "3d" });
+        return jsonwebtoken_1.default.sign({ userId, role }, jwtSecret, { expiresIn: "90d" });
     }
     generateResetToken(userId, role) {
         return jsonwebtoken_1.default.sign({ userId, role }, jwtSecret, { expiresIn: "15m" });

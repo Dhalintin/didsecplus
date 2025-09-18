@@ -11,7 +11,7 @@ if (!jwtSecret) {
 
 class TokenService {
   generateToken(userId: string, role: string): string {
-    return jwt.sign({ userId, role }, jwtSecret, { expiresIn: "3d" });
+    return jwt.sign({ userId, role }, jwtSecret, { expiresIn: "90d" });
   }
 
   generateResetToken(userId: string, role: string): string {
