@@ -62,7 +62,8 @@ class TicketController {
             try {
                 const { page, page_size, status, assigned_to, alert_id, created_by } = req.query;
                 const query = {
-                    page: typeof page === "string" ? parseInt(page, 10) : Number(page),
+                    // page: typeof page === "string" ? parseInt(page, 10) : Number(page),
+                    page: page && typeof page === "string" ? parseInt(page, 10) : 1,
                     page_size: typeof page_size === "string"
                         ? parseInt(page_size, 10)
                         : Number(page_size) || 20,

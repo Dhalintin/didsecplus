@@ -48,7 +48,7 @@ class UserController {
         return __awaiter(this, void 0, void 0, function* () {
             const { page, page_size, role, q, location } = req.query;
             const data = {
-                page: typeof page === "string" ? parseInt(page, 10) : Number(page),
+                page: page && typeof page === "string" ? parseInt(page, 10) : 1,
                 page_size: typeof page_size === "string"
                     ? parseInt(page_size, 10)
                     : Number(page_size) || 20,

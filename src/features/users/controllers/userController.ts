@@ -46,7 +46,7 @@ export class UserController {
     const { page, page_size, role, q, location } = req.query;
 
     const data: GetUserDTO = {
-      page: typeof page === "string" ? parseInt(page, 10) : Number(page),
+      page: page && typeof page === "string" ? parseInt(page, 10) : 1,
       page_size:
         typeof page_size === "string"
           ? parseInt(page_size, 10)
@@ -58,7 +58,6 @@ export class UserController {
 
     try {
       const users = await userService.getUsers(data);
-
       new CustomResponse(201, res, "Alert retrieved successfully", users);
     } catch (err: any) {
       const status = err.statusCode || 500;
