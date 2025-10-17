@@ -15,9 +15,11 @@ const prisma = new client_1.PrismaClient();
 class UserService {
     createUser(data) {
         return __awaiter(this, void 0, void 0, function* () {
+            console.log("Cross 3");
             const user = yield prisma.user.create({
                 data: Object.assign(Object.assign({}, data), { role: data.role || "user" }),
             });
+            console.log("Cross 4");
             return user;
         });
     }
@@ -55,14 +57,22 @@ class UserService {
                 },
                 {
                     $project: {
-                        id: "$_id",
+                        // id: "$_id",
+                        id: { $toString: "$_id" },
                         username: { $ifNull: ["$username", ""] },
                         name: { $ifNull: ["$name", ""] },
                         role: 1,
                         location: { $ifNull: ["$location", ""] },
                         device: { $ifNull: ["$device", "Unknown"] },
+                        // ticketIds: {
+                        //   $map: { input: "$tickets", as: "ticket", in: "$$ticket._id" },
+                        // },
                         ticketIds: {
-                            $map: { input: "$tickets", as: "ticket", in: "$$ticket._id" },
+                            $map: {
+                                input: "$tickets",
+                                as: "ticket",
+                                in: { $toString: "$$ticket._id" },
+                            },
                         },
                         created_at: { $toString: "$created_at" },
                         _id: 0,

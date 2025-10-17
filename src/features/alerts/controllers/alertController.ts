@@ -61,7 +61,8 @@ export class AlertController {
     const { page, page_size, status, state, lga, from, to } = req.query;
 
     const data: GetAlertDTO = {
-      page: typeof page === "string" ? parseInt(page, 10) : Number(page),
+      // page: typeof page === "string" ? parseInt(page, 10) : Number(page),
+      page: page && typeof page === "string" ? parseInt(page, 10) : 1,
       page_size:
         typeof page_size === "string"
           ? parseInt(page_size, 10)

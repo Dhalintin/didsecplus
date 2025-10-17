@@ -6,12 +6,14 @@ const prisma = new PrismaClient();
 
 export class UserService {
   async createUser(data: any) {
+    console.log("Cross 3");
     const user = await prisma.user.create({
       data: {
         ...data,
         role: data.role || "user",
       },
     });
+    console.log("Cross 4");
 
     return user;
   }
@@ -51,14 +53,22 @@ export class UserService {
       },
       {
         $project: {
-          id: "$_id",
+          // id: "$_id",
+          id: { $toString: "$_id" },
           username: { $ifNull: ["$username", ""] },
           name: { $ifNull: ["$name", ""] },
           role: 1,
           location: { $ifNull: ["$location", ""] },
           device: { $ifNull: ["$device", "Unknown"] },
+          // ticketIds: {
+          //   $map: { input: "$tickets", as: "ticket", in: "$$ticket._id" },
+          // },
           ticketIds: {
-            $map: { input: "$tickets", as: "ticket", in: "$$ticket._id" },
+            $map: {
+              input: "$tickets",
+              as: "ticket",
+              in: { $toString: "$$ticket._id" },
+            },
           },
           created_at: { $toString: "$created_at" },
           _id: 0,
