@@ -5,6 +5,9 @@ import CustomResponse from "../../../utils/helpers/response.util";
 import { alertSchema } from "../../../validations/alert.validation";
 import { AuthService } from "../../authentication/services/registerUser";
 import { getLocationDetails } from "../../../utils/getLocation";
+import { socketService } from "../../../server";
+import logger from "../../../middlewares/logger.middleware";
+
 const alertService = new AlertService();
 
 interface LocationInput {
@@ -46,6 +49,12 @@ export class AlertController {
       };
 
       const alert = await alertService.createAlert(req.user.userId, data);
+
+      if (socketService) {
+        socketService.emitNewAlert(alert, "full");
+      } else {
+        logger.error("SocketService not initialized");
+      }
 
       new CustomResponse(201, res, "Alert created successfully", alert);
 

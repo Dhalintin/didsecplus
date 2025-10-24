@@ -18,6 +18,8 @@ const response_util_1 = __importDefault(require("../../../utils/helpers/response
 const alert_validation_1 = require("../../../validations/alert.validation");
 const registerUser_1 = require("../../authentication/services/registerUser");
 const getLocation_1 = require("../../../utils/getLocation");
+const server_1 = require("../../../server");
+const logger_middleware_1 = __importDefault(require("../../../middlewares/logger.middleware"));
 const alertService = new alert_service_1.AlertService();
 class AlertController {
     // Create Alert
@@ -47,6 +49,12 @@ class AlertController {
                 const data = Object.assign(Object.assign({}, responseData), { latitude: Number(responseData.latitude), longitude: Number(responseData.longitude), state,
                     lga });
                 const alert = yield alertService.createAlert(req.user.userId, data);
+                if (server_1.socketService) {
+                    server_1.socketService.emitNewAlert(alert, "full");
+                }
+                else {
+                    logger_middleware_1.default.error("SocketService not initialized");
+                }
                 new response_util_1.default(201, res, "Alert created successfully", alert);
                 return;
             }
