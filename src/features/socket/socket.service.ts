@@ -24,16 +24,16 @@ export class SocketService {
 
   private setupSocketEvents() {
     this.io.on("connection", (socket: Socket) => {
-      logger.info(`New client connected: ${socket.id}`);
+      // logger.info(`New client connected: ${socket.id}`);
 
       socket.on("registerAdmin", () => {
         this.adminSockets.add(socket.id);
-        logger.info(`Admin registered: ${socket.id}`);
+        // logger.info(`Admin registered: ${socket.id}`);
       });
 
       socket.on("disconnect", () => {
         this.adminSockets.delete(socket.id);
-        logger.info(`Client disconnected: ${socket.id}`);
+        // logger.info(`Client disconnected: ${socket.id}`);
       });
     });
   }
