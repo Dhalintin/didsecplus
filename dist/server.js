@@ -25,15 +25,15 @@ exports.socketService = exports.PORT = void 0;
 // src/server.ts
 const http_1 = require("http");
 const app_1 = __importDefault(require("./app"));
-const logger_middleware_1 = __importDefault(require("./middlewares/logger.middleware"));
 const socket_service_1 = __importDefault(require("./features/socket/socket.service"));
 exports.PORT = process.env.PORT || 9871;
 exports.socketService = null;
 (() => __awaiter(void 0, void 0, void 0, function* () {
-    logger_middleware_1.default.info(`Attempting to run server on port ${exports.PORT}`);
+    // logger.info(`Attempting to run server on port ${PORT}`);
     const httpServer = (0, http_1.createServer)(app_1.default);
     exports.socketService = new socket_service_1.default(httpServer);
     httpServer.listen(exports.PORT, () => {
-        logger_middleware_1.default.info(`Listening on port ${exports.PORT}`);
+        console.log(`Listening on port ${exports.PORT}`);
+        // logger.info(`Listening on port ${PORT}`);
     });
 }))();
