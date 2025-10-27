@@ -12,6 +12,7 @@ const location_route_1 = __importDefault(require("./locations/routes/location.ro
 const routes_1 = __importDefault(require("./analytics/routes"));
 const user_route_1 = __importDefault(require("./users/routes/user.route"));
 const report_route_1 = __importDefault(require("./reports/routes/report.route"));
+const socket_route_1 = __importDefault(require("./socket/socket.route"));
 appRouter.use("/auth", auth_route_1.default);
 appRouter.use("/alerts", alert_route_1.default);
 appRouter.use("/tickets", ticket_route_1.default);
@@ -19,4 +20,5 @@ appRouter.use("/locations", location_route_1.default);
 appRouter.use("/analytics", routes_1.default);
 appRouter.use("/users", user_route_1.default);
 appRouter.use("/reports", report_route_1.default);
+appRouter.use("/socket-test", socket_route_1.default);
 exports.default = appRouter;
