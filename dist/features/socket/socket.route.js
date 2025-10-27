@@ -10,11 +10,11 @@ const socketRoute = (0, express_1.Router)();
 socketRoute.get("/trigger", (req, res) => {
     if (server_1.socketService) {
         server_1.socketService.emitNewAlert({
-            alertId: "68f99c581314a473a5f7fcca",
+            alertId: "alert-id-123",
             message: "Message alert",
         }, "full");
         new response_util_1.default(201, res, "Triggered", {
-            alertId: "68f99c581314a473a5f7fcca",
+            alertId: "alert-id-123",
             message: "Message alert",
         });
         return;

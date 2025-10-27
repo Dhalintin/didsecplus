@@ -8,13 +8,13 @@ socketRoute.get("/trigger", (req, res) => {
   if (socketService) {
     socketService.emitNewAlert(
       {
-        alertId: "68f99c581314a473a5f7fcca",
+        alertId: "alert-id-123",
         message: "Message alert",
       },
       "full"
     );
     new CustomResponse(201, res, "Triggered", {
-      alertId: "68f99c581314a473a5f7fcca",
+      alertId: "alert-id-123",
       message: "Message alert",
     });
     return;
