@@ -17,7 +17,12 @@ exports.default = (app) => {
     app.use((0, morgan_1.default)("combined"));
     // CORS middleware
     app.use((0, cors_1.default)({
-        origin: "*",
+        // origin: "*",
+        origin: [
+            "http://localhost:3000",
+            "http://localhost:3001",
+            "http://localhost:3002",
+        ],
         methods: ["GET", "POST", "PUT", "PATCH"],
         allowedHeaders: ["Content-Type", "Authorization"],
         credentials: true,
