@@ -16,7 +16,12 @@ export default (app: Application) => {
   // CORS middleware
   app.use(
     cors({
-      origin: "*",
+      // origin: "*",
+      origin: [
+        "http://localhost:3000",
+        "http://localhost:3001",
+        "http://localhost:3002",
+      ],
       methods: ["GET", "POST", "PUT", "PATCH"],
       allowedHeaders: ["Content-Type", "Authorization"],
       credentials: true,
