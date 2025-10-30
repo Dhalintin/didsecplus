@@ -48,7 +48,7 @@ project-root/
 
 ### 1 Clone the repo
 
-git clone https://github.com/Bias-free-job-board/Api.git
+git clone https://github.com/Dhalintin/didsecplus.git
 
 ## Install Dependecies
 
