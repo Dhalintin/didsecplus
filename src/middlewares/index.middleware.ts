@@ -22,7 +22,7 @@ export default (app: Application) => {
         "http://localhost:3001",
         "http://localhost:3002",
       ],
-      methods: ["GET", "POST", "PUT", "PATCH"],
+      methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
       allowedHeaders: ["Content-Type", "Authorization"],
       credentials: true,
     })
