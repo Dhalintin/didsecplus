@@ -102,7 +102,7 @@ class SocketService {
                         callback(new Error(`Origin ${requestOrigin} not allowed`), false);
                     }
                 },
-                methods: ["GET", "POST"],
+                methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
                 credentials: true,
             },
         });
