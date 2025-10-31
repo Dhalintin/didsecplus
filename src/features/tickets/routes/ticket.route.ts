@@ -12,6 +12,6 @@ ticketRoutes.get("/", authMiddleware, controller.getTickets);
 ticketRoutes.get("/:id", authMiddleware, controller.getTicket);
 ticketRoutes.post("/", authMiddleware, controller.createTicket);
 ticketRoutes.patch("/:id", authMiddleware, controller.updateTicket);
-ticketRoutes.delete("/:id", adminAuthMiddleware, controller.deleteTicket);
+ticketRoutes.delete("/:id", controller.deleteTicket);
 
 export default ticketRoutes;
