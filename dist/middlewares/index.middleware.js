@@ -3,6 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+// /// <reference path="../types/custom.d.ts" />
 const express_1 = require("express");
 const dotenv_1 = require("dotenv");
 const morgan_1 = __importDefault(require("morgan"));
@@ -58,7 +59,6 @@ exports.default = (app) => {
     app.use(errors_middleware_1.default);
     app.use("/api/v1", appRoute_1.default);
 };
-// /// <reference path="../types/custom.d.ts" />
 // import { Application, json, urlencoded } from "express";
 // import { configDotenv } from "dotenv";
 // import morgan from "morgan";
