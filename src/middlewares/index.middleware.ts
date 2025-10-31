@@ -1,3 +1,4 @@
+// /// <reference path="../types/custom.d.ts" />
 import { Application, json, urlencoded } from "express";
 import { configDotenv } from "dotenv";
 import morgan from "morgan";
@@ -60,8 +61,6 @@ export default (app: Application) => {
   app.use(errorHandler);
   app.use("/api/v1", indexRoutes);
 };
-
-// /// <reference path="../types/custom.d.ts" />
 
 // import { Application, json, urlencoded } from "express";
 // import { configDotenv } from "dotenv";
