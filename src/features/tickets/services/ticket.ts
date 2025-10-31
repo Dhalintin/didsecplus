@@ -120,10 +120,11 @@ export class TicketService {
   }
 
   async deleteTicket(id: string) {
-    return prisma.ticket.delete({
-      where: {
-        id,
-      },
-    });
+    console.log("Deleting ticket with id:", id);
+    // return prisma.ticket.delete({
+    //   where: {
+    //     id,
+    //   },
+    // });
   }
 }

@@ -139,11 +139,12 @@ class TicketService {
     }
     deleteTicket(id) {
         return __awaiter(this, void 0, void 0, function* () {
-            return prisma.ticket.delete({
-                where: {
-                    id,
-                },
-            });
+            console.log("Deleting ticket with id:", id);
+            // return prisma.ticket.delete({
+            //   where: {
+            //     id,
+            //   },
+            // });
         });
     }
 }
