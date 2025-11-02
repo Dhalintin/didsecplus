@@ -44,6 +44,22 @@ class TicketService {
             });
         });
     }
+    getAllTicket(id) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const allTicket = yield prisma.ticket.findMany({
+                include: {
+                    alert: true,
+                },
+            });
+            return { data: allTicket, meta: { total: allTicket.length } };
+        });
+    }
+    countTicket(id) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const allTicket = yield prisma.ticket.findMany({});
+            return allTicket.length;
+        });
+    }
     getTickets(query) {
         return __awaiter(this, void 0, void 0, function* () {
             var _a, _b, _c, _d, _e, _f;
@@ -217,10 +233,17 @@ class TicketService {
     // }
     updateTicket(id, data) {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield prisma.ticket.update({
+            const updatedTicket = yield prisma.ticket.update({
                 where: { id },
                 data,
             });
+            if (data.status && data.status === "resolved") {
+                yield prisma.alert.updateMany({
+                    where: { id: updatedTicket.alert_Id },
+                    data: { status: "resolved" },
+                });
+            }
+            return updatedTicket;
         });
     }
     deleteTicket(id) {

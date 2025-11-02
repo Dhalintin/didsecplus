@@ -25,6 +25,21 @@ export class TicketService {
     });
   }
 
+  async getAllTicket(id: string) {
+    const allTicket = await prisma.ticket.findMany({
+      include: {
+        alert: true,
+      },
+    });
+
+    return { data: allTicket, meta: { total: allTicket.length } };
+  }
+
+  async countTicket(id: string) {
+    const allTicket = await prisma.ticket.findMany({});
+    return allTicket.length;
+  }
+
   async getTickets(query: GetTicketDTO) {
     const {
       page = 1,
@@ -217,10 +232,19 @@ export class TicketService {
   // }
 
   async updateTicket(id: string, data: any) {
-    return await prisma.ticket.update({
+    const updatedTicket = await prisma.ticket.update({
       where: { id },
       data,
     });
+
+    if (data.status && data.status === "resolved") {
+      await prisma.alert.updateMany({
+        where: { id: updatedTicket.alert_Id },
+        data: { status: "resolved" },
+      });
+    }
+
+    return updatedTicket;
   }
 
   async deleteTicket(id: string) {
