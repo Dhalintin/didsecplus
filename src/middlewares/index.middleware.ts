@@ -73,21 +73,22 @@ export default (app: Application) => {
 
   app.use(
     cors({
-      origin: (requestOrigin: string | undefined, callback: any) => {
-        if (!requestOrigin) return callback(null, true);
+      // origin: (requestOrigin: string | undefined, callback: any) => {
+      //   if (!requestOrigin) return callback(null, true);
 
-        const isAllowed = allowedOrigins.some((pattern) =>
-          pattern instanceof RegExp
-            ? pattern.test(requestOrigin)
-            : pattern === requestOrigin
-        );
+      //   const isAllowed = allowedOrigins.some((pattern) =>
+      //     pattern instanceof RegExp
+      //       ? pattern.test(requestOrigin)
+      //       : pattern === requestOrigin
+      //   );
 
-        if (isAllowed) {
-          callback(null, requestOrigin);
-        } else {
-          callback(new Error(`CORS: Origin ${requestOrigin} not allowed`));
-        }
-      },
+      //   if (isAllowed) {
+      //     callback(null, requestOrigin);
+      //   } else {
+      //     callback(new Error(`CORS: Origin ${requestOrigin} not allowed`));
+      //   }
+      // },
+      origin: "*",
       credentials: true,
       methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
       allowedHeaders: ["Content-Type", "Authorization"],
