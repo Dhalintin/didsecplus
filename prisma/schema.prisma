@@ -99,6 +99,7 @@ model Ticket {
 
   @@index([created_at])
   @@index([created_by])
+  @@index([status])
 }
 
 model State {
