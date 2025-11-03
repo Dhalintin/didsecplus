@@ -13,7 +13,7 @@ authRouter.post("/login", LoginController.login);
 
 authRouter.post("/admin/register", RegisterUserController.adminCreation);
 
-authRouter.post("/admin/verify", RegisterUserController.resendCode);
+authRouter.post("/admin/resend-code", RegisterUserController.resendCode);
 
 authRouter.post(
   "/admin/verification",
