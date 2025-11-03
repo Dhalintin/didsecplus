@@ -6,3 +6,12 @@ export interface User {
   role: String | null;
   phone: String;
 }
+
+export interface adminUser {
+  email: string;
+  username: string | null;
+  name?: string;
+  password: string;
+  role: "superAdmin" | "admin";
+  phone?: string;
+}
