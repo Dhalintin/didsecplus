@@ -51,3 +51,29 @@ AuthService.registerUser = (data) => __awaiter(void 0, void 0, void 0, function*
         data: Object.assign(Object.assign({}, data), { role: data.role || "user" }),
     });
 });
+AuthService.verifyUser = (email, code) => __awaiter(void 0, void 0, void 0, function* () {
+    const verification = yield prisma.verificationCode.findFirst({
+        where: {
+            user: { email },
+            code,
+            type: "EMAIL_VERIFICATION",
+            used: false,
+            expiresAt: { gt: new Date() },
+        },
+        include: { user: true },
+    });
+    if (!verification) {
+        return false;
+    }
+    // Mark code as used
+    yield prisma.verificationCode.update({
+        where: { id: verification.id },
+        data: { used: true },
+    });
+    // Mark user as verified
+    yield prisma.user.update({
+        where: { id: verification.userId },
+        data: { isVerified: true },
+    });
+    return true;
+});

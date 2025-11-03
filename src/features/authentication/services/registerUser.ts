@@ -49,4 +49,35 @@ export class AuthService {
       },
     });
   };
+
+  static verifyUser = async (email: string, code: string) => {
+    const verification = await prisma.verificationCode.findFirst({
+      where: {
+        user: { email },
+        code,
+        type: "EMAIL_VERIFICATION",
+        used: false,
+        expiresAt: { gt: new Date() },
+      },
+      include: { user: true },
+    });
+
+    if (!verification) {
+      return false;
+    }
+
+    // Mark code as used
+    await prisma.verificationCode.update({
+      where: { id: verification.id },
+      data: { used: true },
+    });
+
+    // Mark user as verified
+    await prisma.user.update({
+      where: { id: verification.userId },
+      data: { isVerified: true },
+    });
+
+    return true;
+  };
 }

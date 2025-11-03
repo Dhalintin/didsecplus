@@ -40,6 +40,110 @@ export class TicketService {
     return allTicket.length;
   }
 
+  // async getTickets(query: GetTicketDTO) {
+  //   const {
+  //     page = 1,
+  //     page_size = 20,
+  //     status,
+  //     assigned_to,
+  //     created_by,
+  //     alert_Id,
+  //   } = query;
+
+  //   const limit = Math.min(page_size, 100); // safety cap
+  //   const skip = (page - 1) * limit;
+
+  //   // Build match stage
+  //   const matchStage: any = {};
+  //   if (status) matchStage.status = status;
+  //   if (assigned_to) matchStage.assigned_to = assigned_to;
+  //   if (created_by) matchStage.created_by = created_by;
+  //   if (alert_Id) matchStage.alert_Id = alert_Id;
+
+  //   const hasFilters = Object.keys(matchStage).length > 0;
+
+  //   // === MAIN PIPELINE (with pagination) ===
+  //   const pipeline = [
+  //     ...(hasFilters ? [{ $match: matchStage }] : []),
+  //     {
+  //       $lookup: {
+  //         from: "Alert",
+  //         localField: "alert_Id",
+  //         foreignField: "_id",
+  //         as: "alert",
+  //       },
+  //     },
+  //     { $unwind: { path: "$alert", preserveNullAndEmptyArrays: true } },
+  //     { $sort: { created_at: -1 } },
+  //     { $skip: skip },
+  //     { $limit: limit },
+  //   ];
+
+  //   const ticketsResult: any = await prisma.$runCommandRaw({
+  //     aggregate: "Ticket",
+  //     pipeline,
+  //     cursor: { batchSize: limit },
+  //   });
+
+  //   // === COUNT PIPELINE (total matching docs) ===
+  //   const countPipeline = [
+  //     ...(hasFilters ? [{ $match: matchStage }] : []),
+  //     { $count: "total" },
+  //   ];
+
+  //   const countResult: any = await prisma.$runCommandRaw({
+  //     aggregate: "Ticket",
+  //     pipeline: countPipeline,
+  //     cursor: {},
+  //   });
+
+  //   // Extract total safely
+  //   const total = countResult.cursor?.firstBatch?.[0]?.total ?? 0;
+
+  //   // Extract tickets
+  //   const rawTickets = ticketsResult.cursor?.firstBatch ?? [];
+
+  //   // Transform
+  //   const transformedData = rawTickets.map((ticket: any) => ({
+  //     id: ticket._id?.$oid || ticket._id,
+  //     created_at: ticket.created_at?.$date || ticket.created_at,
+  //     updated_at: ticket.updated_at?.$date || ticket.updated_at,
+  //     alert_Id: ticket.alert_Id?.$oid || ticket.alert_Id,
+  //     created_by: ticket.created_by?.$oid || ticket.created_by,
+  //     title: ticket.title,
+  //     status: ticket.status,
+  //     priority: ticket.priority,
+  //     alert: ticket.alert
+  //       ? {
+  //           id: ticket.alert._id?.$oid || ticket.alert._id,
+  //           userId: ticket.alert.userId?.$oid || ticket.alert.userId,
+  //           title: ticket.alert.title,
+  //           description: ticket.alert.description,
+  //           status: ticket.alert.status,
+  //           source: ticket.alert.source,
+  //           latitude: ticket.alert.latitude,
+  //           longitude: ticket.alert.longitude,
+  //           state: ticket.alert.state,
+  //           lga: ticket.alert.lga,
+  //           created_at:
+  //             ticket.alert.created_at?.$date || ticket.alert.created_at,
+  //           updated_at:
+  //             ticket.alert.updated_at?.$date || ticket.alert.updated_at,
+  //         }
+  //       : null,
+  //   }));
+
+  //   return {
+  //     data: transformedData,
+  //     meta: {
+  //       page: Number(page),
+  //       page_size: transformedData.length || limit,
+  //       total,
+  //       total_pages: Math.ceil(total / limit),
+  //     },
+  //   };
+  // }
+
   async getTickets(query: GetTicketDTO) {
     const {
       page = 1,
@@ -50,21 +154,23 @@ export class TicketService {
       alert_Id,
     } = query;
 
-    const limit = Math.min(page_size, 100); // safety cap
+    const limit = Math.min(page_size, 100);
     const skip = (page - 1) * limit;
 
     // Build match stage
     const matchStage: any = {};
     if (status) matchStage.status = status;
-    if (assigned_to) matchStage.assigned_to = assigned_to;
-    if (created_by) matchStage.created_by = created_by;
-    if (alert_Id) matchStage.alert_Id = alert_Id;
+    if (assigned_to) matchStage.assigned_to = { $oid: assigned_to };
+    if (created_by) matchStage.created_by = { $oid: created_by };
+    if (alert_Id) matchStage.alert_Id = { $oid: alert_Id };
 
     const hasFilters = Object.keys(matchStage).length > 0;
 
-    // === MAIN PIPELINE (with pagination) ===
+    // === MAIN PIPELINE ===
     const pipeline = [
       ...(hasFilters ? [{ $match: matchStage }] : []),
+
+      // Lookup Alert
       {
         $lookup: {
           from: "Alert",
@@ -74,9 +180,76 @@ export class TicketService {
         },
       },
       { $unwind: { path: "$alert", preserveNullAndEmptyArrays: true } },
+
+      // Lookup Created By User
+      {
+        $lookup: {
+          from: "User",
+          localField: "created_by",
+          foreignField: "_id",
+          as: "createdByUser",
+        },
+      },
+      { $unwind: { path: "$createdByUser", preserveNullAndEmptyArrays: true } },
+
+      // Lookup Assigned To User
+      {
+        $lookup: {
+          from: "User",
+          localField: "assigned_to",
+          foreignField: "_id",
+          as: "assignedToUser",
+        },
+      },
+      {
+        $unwind: { path: "$assignedToUser", preserveNullAndEmptyArrays: true },
+      },
+
+      // Sort & Paginate
       { $sort: { created_at: -1 } },
       { $skip: skip },
       { $limit: limit },
+
+      // Project final shape
+      {
+        $project: {
+          _id: 1,
+          title: 1,
+          description: 1,
+          status: 1,
+          priority: 1,
+          note: 1,
+          created_at: 1,
+          updated_at: 1,
+          alert_Id: 1,
+          created_by: 1,
+          assigned_to: 1,
+
+          alert: {
+            id: "$alert._id",
+            userId: "$alert.userId",
+            title: "$alert.title",
+            description: "$alert.description",
+            status: "$alert.status",
+            source: "$alert.source",
+            latitude: "$alert.latitude",
+            longitude: "$alert.longitude",
+            state: "$alert.state",
+            lga: "$alert.lga",
+            created_at: "$alert.created_at",
+            updated_at: "$alert.updated_at",
+          },
+
+          createdBy: {
+            id: "$createdByUser._id",
+            name: "$createdByUser.name",
+            username: "$createdByUser.username",
+            email: "$createdByUser.email",
+            role: "$createdByUser.role",
+            phone: "$createdByUser.phone",
+          },
+        },
+      },
     ];
 
     const ticketsResult: any = await prisma.$runCommandRaw({
@@ -85,7 +258,6 @@ export class TicketService {
       cursor: { batchSize: limit },
     });
 
-    // === COUNT PIPELINE (total matching docs) ===
     const countPipeline = [
       ...(hasFilters ? [{ $match: matchStage }] : []),
       { $count: "total" },
@@ -97,25 +269,26 @@ export class TicketService {
       cursor: {},
     });
 
-    // Extract total safely
     const total = countResult.cursor?.firstBatch?.[0]?.total ?? 0;
-
-    // Extract tickets
     const rawTickets = ticketsResult.cursor?.firstBatch ?? [];
 
-    // Transform
+    // Transform dates & ObjectIds safely
     const transformedData = rawTickets.map((ticket: any) => ({
       id: ticket._id?.$oid || ticket._id,
+      title: ticket.title,
+      description: ticket.description,
+      status: ticket.status,
+      priority: ticket.priority,
+      note: ticket.note,
       created_at: ticket.created_at?.$date || ticket.created_at,
       updated_at: ticket.updated_at?.$date || ticket.updated_at,
       alert_Id: ticket.alert_Id?.$oid || ticket.alert_Id,
       created_by: ticket.created_by?.$oid || ticket.created_by,
-      title: ticket.title,
-      status: ticket.status,
-      priority: ticket.priority,
+      assigned_to: ticket.assigned_to?.$oid || ticket.assigned_to,
+
       alert: ticket.alert
         ? {
-            id: ticket.alert._id?.$oid || ticket.alert._id,
+            id: ticket.alert.id?.$oid || ticket.alert.id,
             userId: ticket.alert.userId?.$oid || ticket.alert.userId,
             title: ticket.alert.title,
             description: ticket.alert.description,
@@ -131,13 +304,31 @@ export class TicketService {
               ticket.alert.updated_at?.$date || ticket.alert.updated_at,
           }
         : null,
+
+      createdBy: ticket.createdBy
+        ? {
+            id: ticket.createdBy.id?.$oid || ticket.createdBy.id,
+            name: ticket.createdBy.name,
+            email: ticket.createdBy.email,
+            role: ticket.createdBy.role,
+          }
+        : null,
+
+      assignedTo: ticket.assignedTo
+        ? {
+            id: ticket.assignedTo.id?.$oid || ticket.assignedTo.id,
+            name: ticket.assignedTo.name,
+            email: ticket.assignedTo.email,
+            role: ticket.assignedTo.role,
+          }
+        : null,
     }));
 
     return {
       data: transformedData,
       meta: {
         page: Number(page),
-        page_size: transformedData.length || limit,
+        page_size: transformedData.length,
         total,
         total_pages: Math.ceil(total / limit),
       },
@@ -237,11 +428,18 @@ export class TicketService {
       data,
     });
 
-    if (data.status && data.status === "resolved") {
-      await prisma.alert.updateMany({
-        where: { id: updatedTicket.alert_Id },
-        data: { status: "resolved" },
-      });
+    if (data.status) {
+      if (data.status === "resolved") {
+        await prisma.alert.updateMany({
+          where: { id: updatedTicket.alert_Id },
+          data: { status: "resolved" },
+        });
+      } else {
+        await prisma.alert.updateMany({
+          where: { id: updatedTicket.alert_Id },
+          data: { status: "investigating" },
+        });
+      }
     }
 
     return updatedTicket;

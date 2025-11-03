@@ -22,6 +22,11 @@ export class LoginController {
         return;
       }
 
+      if (user.role !== "citizen" && !user.isVerified) {
+        new CustomResponse(401, res, "Verify your mail to login!");
+        return;
+      }
+
       if (
         !user.password ||
         (user.password && !(await comparePassword(password, user.password)))

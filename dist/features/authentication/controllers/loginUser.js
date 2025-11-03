@@ -33,6 +33,10 @@ class LoginController {
                     new response_util_1.default(404, res, "User Email or Password incorrect!");
                     return;
                 }
+                if (user.role !== "citizen" && !user.isVerified) {
+                    new response_util_1.default(401, res, "Verify your mail to login!");
+                    return;
+                }
                 if (!user.password ||
                     (user.password && !(yield (0, hash_1.comparePassword)(password, user.password)))) {
                     new response_util_1.default(404, res, "User Email or Password incorrect!");
