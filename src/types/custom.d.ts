@@ -5,3 +5,4 @@ declare module "jsonwebtoken";
 declare module "client";
 declare module "multer";
 declare module "helmet";
+declare module "nodemailer";
