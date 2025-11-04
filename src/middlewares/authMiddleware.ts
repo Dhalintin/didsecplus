@@ -1,6 +1,5 @@
 import { Request, Response, NextFunction } from "express";
 import { tokenService } from "../utils/jwt";
-import jwt from "jsonwebtoken";
 
 declare global {
   namespace Express {
