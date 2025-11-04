@@ -9,35 +9,35 @@ export class SocketService {
 
   constructor(server: HttpServer) {
     const allowedOrigins = this.parseAllowedOrigins();
-    this.io = new Server(server, {
-      cors: {
-        origin: "*",
-        methods: ["GET", "POST"],
-        credentials: true,
-      },
-    });
-
     // this.io = new Server(server, {
     //   cors: {
-    //     origin: (requestOrigin: string | undefined, callback: any) => {
-    //       if (!requestOrigin) return callback(null, true);
-
-    //       const isAllowed = allowedOrigins.some((origin) => {
-    //         if (origin instanceof RegExp) return origin.test(requestOrigin);
-    //         return origin === requestOrigin;
-    //       });
-
-    //       if (isAllowed) {
-    //         callback(null, requestOrigin);
-    //       } else {
-    //         logger.warn(`CORS blocked: ${requestOrigin}`);
-    //         callback(new Error("Not allowed"), false);
-    //       }
-    //     },
+    //     origin: "*",
     //     methods: ["GET", "POST"],
     //     credentials: true,
     //   },
     // });
+
+    this.io = new Server(server, {
+      cors: {
+        origin: (requestOrigin: string | undefined, callback: any) => {
+          if (!requestOrigin) return callback(null, true);
+
+          const isAllowed = allowedOrigins.some((origin) => {
+            if (origin instanceof RegExp) return origin.test(requestOrigin);
+            return origin === requestOrigin;
+          });
+
+          if (isAllowed) {
+            callback(null, requestOrigin);
+          } else {
+            logger.warn(`CORS blocked: ${requestOrigin}`);
+            callback(new Error("Not allowed"), false);
+          }
+        },
+        methods: ["GET", "POST"],
+        credentials: true,
+      },
+    });
 
     this.setupSocketEvents();
   }
@@ -49,7 +49,7 @@ export class SocketService {
         /^http:\/\/localhost:30(00|01|02)$/,
         /^https:\/\/.*\.vercel\.app$/,
         /^https:\/\/.*\.netlify\.app$/,
-        /^https:\/\/yourdomain\.com$/,
+        /^https:\/\/.*didsecplus.*$/,
       ];
     }
     return raw
