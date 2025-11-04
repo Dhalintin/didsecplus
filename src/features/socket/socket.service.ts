@@ -1,6 +1,4 @@
-// socket.service.ts
 import { Server, Socket } from "socket.io";
-// import { tokenService } from "../utils/jwt";
 import { Server as HttpServer } from "http";
 import logger from "../../middlewares/logger.middleware";
 import { tokenService } from "../../utils/jwt";
@@ -191,4 +189,4 @@ export class SocketService {
 //   }
 // }
 
-// export default SocketService;
+export default SocketService;

@@ -4,7 +4,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SocketService = void 0;
-// socket.service.ts
 const socket_io_1 = require("socket.io");
 const logger_middleware_1 = __importDefault(require("../../middlewares/logger.middleware"));
 const jwt_1 = require("../../utils/jwt");
@@ -168,4 +167,4 @@ exports.SocketService = SocketService;
 //     return this.io;
 //   }
 // }
-// export default SocketService;
+exports.default = SocketService;
