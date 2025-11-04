@@ -11,32 +11,35 @@ class SocketService {
     constructor(server) {
         this.adminSockets = new Set();
         const allowedOrigins = this.parseAllowedOrigins();
-        this.io = new socket_io_1.Server(server, {
-            cors: {
-                origin: "*",
-                methods: ["GET", "POST"],
-                credentials: true,
-            },
-        });
         // this.io = new Server(server, {
         //   cors: {
-        //     origin: (requestOrigin: string | undefined, callback: any) => {
-        //       if (!requestOrigin) return callback(null, true);
-        //       const isAllowed = allowedOrigins.some((origin) => {
-        //         if (origin instanceof RegExp) return origin.test(requestOrigin);
-        //         return origin === requestOrigin;
-        //       });
-        //       if (isAllowed) {
-        //         callback(null, requestOrigin);
-        //       } else {
-        //         logger.warn(`CORS blocked: ${requestOrigin}`);
-        //         callback(new Error("Not allowed"), false);
-        //       }
-        //     },
+        //     origin: "*",
         //     methods: ["GET", "POST"],
         //     credentials: true,
         //   },
         // });
+        this.io = new socket_io_1.Server(server, {
+            cors: {
+                origin: (requestOrigin, callback) => {
+                    if (!requestOrigin)
+                        return callback(null, true);
+                    const isAllowed = allowedOrigins.some((origin) => {
+                        if (origin instanceof RegExp)
+                            return origin.test(requestOrigin);
+                        return origin === requestOrigin;
+                    });
+                    if (isAllowed) {
+                        callback(null, requestOrigin);
+                    }
+                    else {
+                        logger_middleware_1.default.warn(`CORS blocked: ${requestOrigin}`);
+                        callback(new Error("Not allowed"), false);
+                    }
+                },
+                methods: ["GET", "POST"],
+                credentials: true,
+            },
+        });
         this.setupSocketEvents();
     }
     parseAllowedOrigins() {
@@ -46,7 +49,7 @@ class SocketService {
                 /^http:\/\/localhost:30(00|01|02)$/,
                 /^https:\/\/.*\.vercel\.app$/,
                 /^https:\/\/.*\.netlify\.app$/,
-                /^https:\/\/yourdomain\.com$/,
+                /^https:\/\/.*didsecplus.*$/,
             ];
         }
         return raw
