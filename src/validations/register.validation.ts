@@ -38,7 +38,7 @@ const userSchema = Joi.object({
   }),
   password: Joi.string()
     .min(8)
-    .pattern(new RegExp("^(?=.*[a-z])(?=.*[A-Z])(?=.*[^a-zA-Z0-9])"))
+    // .pattern(new RegExp("^(?=.*[a-z])(?=.*[A-Z])(?=.*[^a-zA-Z0-9])"))
     .required()
     .messages({
       "string.pattern.base":

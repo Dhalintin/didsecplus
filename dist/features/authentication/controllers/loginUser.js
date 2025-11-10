@@ -33,7 +33,8 @@ class LoginController {
                     new response_util_1.default(404, res, "User Email or Password incorrect!");
                     return;
                 }
-                if (user.role !== "citizen" && !user.isVerified) {
+                // if (user.role !== "citizen" && !user.isVerified) {
+                if (!user.isVerified) {
                     new response_util_1.default(401, res, "Verify your mail to login!");
                     return;
                 }
@@ -49,6 +50,7 @@ class LoginController {
                     username: user.username,
                     name: user.name,
                     role: user.role,
+                    phone: user.phone,
                 };
                 const responData = {
                     access_token: token,
