@@ -22,7 +22,8 @@ export class LoginController {
         return;
       }
 
-      if (user.role !== "citizen" && !user.isVerified) {
+      // if (user.role !== "citizen" && !user.isVerified) {
+      if (!user.isVerified) {
         new CustomResponse(401, res, "Verify your mail to login!");
         return;
       }
@@ -44,6 +45,7 @@ export class LoginController {
         username: user.username,
         name: user.name,
         role: user.role,
+        phone: user.phone,
       };
 
       const responData = {

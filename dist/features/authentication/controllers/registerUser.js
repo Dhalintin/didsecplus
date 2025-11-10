@@ -13,7 +13,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.RegisterUserController = void 0;
-const jwt_1 = require("../../../utils/jwt");
 const registerUser_1 = require("../services/registerUser");
 const hash_1 = require("../../../utils/hash");
 const register_validation_1 = __importDefault(require("../../../validations/register.validation"));
@@ -51,13 +50,13 @@ class RegisterUserController {
                     name: user.name,
                     role: user.role,
                 };
-                const token = jwt_1.tokenService.generateToken(user.id, user.role);
-                const responseData = {
-                    access_token: token,
-                    expires_in: 3600,
-                    user: responseUserData,
-                };
-                new response_util_1.default(200, res, `Registration successful!`, responseData);
+                // const token = tokenService.generateToken(user.id, user.role);
+                // const responseData = {
+                //   access_token: token,
+                //   expires_in: 3600,
+                //   user: responseUserData,
+                // };
+                new response_util_1.default(200, res, `Registration successful! Proceed to mail and verify to login`, responseUserData);
                 return;
             }
             catch (err) {
@@ -75,7 +74,7 @@ class RegisterUserController {
                     res.status(400).json({ error: error.details[0].message });
                     return;
                 }
-                const { email, phone, password = "password" } = req.body;
+                const { email, phone, password } = req.body;
                 const requestedData = req.body;
                 const existingUser = yield registerUser_1.AuthService.getExistingUser(email, phone);
                 if (existingUser) {
