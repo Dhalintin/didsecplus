@@ -60,14 +60,19 @@ export class RegisterUserController {
         role: user.role,
       };
 
-      const token = tokenService.generateToken(user.id, user.role);
-      const responseData = {
-        access_token: token,
-        expires_in: 3600,
-        user: responseUserData,
-      };
+      // const token = tokenService.generateToken(user.id, user.role);
+      // const responseData = {
+      //   access_token: token,
+      //   expires_in: 3600,
+      //   user: responseUserData,
+      // };
 
-      new CustomResponse(200, res, `Registration successful!`, responseData);
+      new CustomResponse(
+        200,
+        res,
+        `Registration successful! Proceed to mail and verify to login`,
+        responseUserData
+      );
 
       return;
     } catch (err: any) {
@@ -84,7 +89,7 @@ export class RegisterUserController {
         res.status(400).json({ error: error.details[0].message });
         return;
       }
-      const { email, phone, password = "password" } = req.body;
+      const { email, phone, password } = req.body;
 
       const requestedData: adminUser = req.body;
 

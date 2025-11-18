@@ -11,6 +11,8 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 var _a;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AuthService = void 0;
+const emailService_1 = require("../../../utils/emailService");
+const generateOTP_1 = require("../../../utils/generateOTP");
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 class AuthService {
@@ -47,9 +49,23 @@ AuthService.getUserById = (id) => __awaiter(void 0, void 0, void 0, function* ()
     });
 });
 AuthService.registerUser = (data) => __awaiter(void 0, void 0, void 0, function* () {
-    return yield prisma.user.create({
+    const user = yield prisma.user.create({
         data: Object.assign(Object.assign({}, data), { role: data.role || "user" }),
     });
+    // Generate OTP
+    const code = (0, generateOTP_1.generateOTP)();
+    const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
+    yield prisma.verificationCode.create({
+        data: {
+            userId: user.id,
+            code,
+            type: "EMAIL_VERIFICATION",
+            expiresAt,
+        },
+    });
+    // Send email
+    yield (0, emailService_1.sendVerificationEmail)(user.email, code, user.name || undefined);
+    return user;
 });
 AuthService.verifyUser = (email, code) => __awaiter(void 0, void 0, void 0, function* () {
     const verification = yield prisma.verificationCode.findFirst({
