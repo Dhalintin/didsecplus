@@ -19,4 +19,5 @@ export const alertSchema = Joi.object({
   }),
   state: Joi.string().required(),
   lga: Joi.string().required(),
+  recipients: Joi.array().items(Joi.string()).optional(),
 });

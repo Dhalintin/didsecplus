@@ -24,4 +24,5 @@ exports.alertSchema = joi_1.default.object({
     }),
     state: joi_1.default.string().required(),
     lga: joi_1.default.string().required(),
+    recipients: joi_1.default.array().items(joi_1.default.string()).optional(),
 });

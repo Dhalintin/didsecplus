@@ -47,7 +47,7 @@ class AlertController {
                     }
                 }
                 const data = Object.assign(Object.assign({}, responseData), { latitude: Number(responseData.latitude), longitude: Number(responseData.longitude), state,
-                    lga });
+                    lga, recipients: responseData.recipients || [] });
                 const alert = yield alertService.createAlert(req.user.userId, data);
                 if (server_1.socketService) {
                     server_1.socketService.emitNewAlert(alert, "full");

@@ -14,13 +14,16 @@ import {
 export class RegisterUserController {
   static async register(req: Request, res: Response): Promise<void> {
     try {
+      console.log(1);
       const { error } = userSchema.validate(req.body);
       if (error) {
         res.status(400).json({ error: error.details[0].message });
         return;
       }
+      console.log(2);
       const { email, phone, password, role } = req.body;
 
+      console.log(3);
       if (role) {
         if (role === "superAdmin" || role === "admin") {
           new CustomResponse(
@@ -31,11 +34,12 @@ export class RegisterUserController {
           return;
         }
       }
+      console.log(4);
 
       const requestData: User = req.body;
 
       const existingUser = await AuthService.getExistingUser(email, phone);
-
+      console.log(5);
       if (existingUser) {
         new CustomResponse(
           500,
@@ -45,13 +49,16 @@ export class RegisterUserController {
         return;
       }
 
+      console.log("6");
       const hashedPassword = await hashPassword(password);
       const userData: User = {
         ...requestData,
         password: hashedPassword,
       };
+      console.log(7);
 
       const user = await AuthService.registerUser(userData);
+      console.log(8);
       const responseUserData = {
         id: user.id,
         email: user.email,
@@ -59,6 +66,7 @@ export class RegisterUserController {
         name: user.name,
         role: user.role,
       };
+      console.log(9);
 
       // const token = tokenService.generateToken(user.id, user.role);
       // const responseData = {
@@ -73,6 +81,7 @@ export class RegisterUserController {
         `Registration successful! Proceed to mail and verify to login`,
         responseUserData
       );
+      console.log(10);
 
       return;
     } catch (err: any) {

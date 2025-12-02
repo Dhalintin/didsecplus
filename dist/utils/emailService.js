@@ -13,6 +13,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.sendVerificationEmail = void 0;
+require("dotenv/config");
+require("dotenv").config();
 const nodemailer_1 = __importDefault(require("nodemailer"));
 const transporter = nodemailer_1.default.createTransport({
     service: "gmail",
@@ -21,7 +23,16 @@ const transporter = nodemailer_1.default.createTransport({
         pass: process.env.NODE_MAILER_PASS,
     },
 });
+transporter.verify((error, success) => {
+    if (error) {
+        console.log("SMTP Error:", error.message);
+    }
+    else {
+        console.log("SMTP ready - emails will work");
+    }
+});
 const sendVerificationEmail = (to, code, name) => __awaiter(void 0, void 0, void 0, function* () {
+    console.log("7c1");
     const html = `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #ddd; border-radius: 10px;">
       <h2>Welcome to DidSecPlus, ${name || "User"}!</h2>
@@ -37,8 +48,9 @@ const sendVerificationEmail = (to, code, name) => __awaiter(void 0, void 0, void
       <small>DidSecPlus &copy; 2025</small>
     </div>
   `;
+    console.log("7c2");
     yield transporter.sendMail({
-        from: `"DidSecPlus" <${process.env.EMAIL_USER}>`,
+        from: `"DidSecPlus" <${process.env.NODE_MAILER_USER}>`,
         to,
         subject: "Verify Your Email - DidSecPlus",
         html,
