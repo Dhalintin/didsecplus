@@ -23,10 +23,15 @@ export class LoginController {
       }
 
       // if (user.role !== "citizen" && !user.isVerified) {
-      if (!user.isVerified) {
-        new CustomResponse(401, res, "Verify your mail to login!");
-        return;
-      }
+      // if (!user.isVerified) {
+      //   await AuthService.resendOTP(user);
+      //   new CustomResponse(
+      //     401,
+      //     res,
+      //     "Verify your email to login. A verification code has been sent to your mail."
+      //   );
+      //   return;
+      // }
 
       if (
         !user.password ||

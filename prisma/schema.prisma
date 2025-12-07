@@ -161,5 +161,13 @@ model AlertRecipient {
   @@index([userId])
 }
 
+model TicketStatusSummary {
+  id            String   @id @default(auto()) @map("_id") @db.ObjectId
+  live          Int      @default(0)
+  resolved      Int      @default(0)
+  open          Int      @default(0)
+  in_progress   Int      @default(0)
+  refreshed_at  DateTime @default(now()) @updatedAt
 
-
+  @@unique([id])
+}

@@ -1,13 +1,12 @@
 import { sendVerificationEmail } from "../../../utils/emailService";
 import { generateOTP } from "../../../utils/generateOTP";
-import { User } from "../dtos/registerUserDto";
+import { User, UserResendOTP } from "../dtos/registerUserDto";
 
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 
 export class AuthService {
   static getExistingUser = async (email: string, phone: string) => {
-    console.log("4a");
     const existingUserByEmail = await prisma.user.findUnique({
       where: { email },
     });
@@ -18,7 +17,6 @@ export class AuthService {
       const existingUserByPhone = await prisma.user.findFirst({
         where: { phone },
       });
-      console.log("4b");
 
       if (existingUserByPhone)
         return { user: existingUserByEmail, conflict: "phone" };
@@ -46,7 +44,6 @@ export class AuthService {
   };
 
   static registerUser = async (data: User) => {
-    console.log("7a");
     const user = await prisma.user.create({
       data: {
         ...data,
@@ -54,11 +51,29 @@ export class AuthService {
       },
     });
 
-    console.log("7b");
     // Generate OTP
+    // const code = generateOTP();
+    // const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
+
+    // await prisma.verificationCode.create({
+    //   data: {
+    //     userId: user.id,
+    //     code,
+    //     type: "EMAIL_VERIFICATION",
+    //     expiresAt,
+    //   },
+    // });
+
+    // // Send email
+    // await sendVerificationEmail(user.email, code, user.name || undefined);
+
+    return user;
+  };
+
+  static resendOTP = async (user: UserResendOTP) => {
     const code = generateOTP();
     const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
-    console.log("7c");
+
     await prisma.verificationCode.create({
       data: {
         userId: user.id,
@@ -68,10 +83,7 @@ export class AuthService {
       },
     });
 
-    console.log("7c");
-    // Send email
     await sendVerificationEmail(user.email, code, user.name || undefined);
-    console.log("7d");
 
     return user;
   };

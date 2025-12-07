@@ -20,7 +20,6 @@ class AuthService {
 exports.AuthService = AuthService;
 _a = AuthService;
 AuthService.getExistingUser = (email, phone) => __awaiter(void 0, void 0, void 0, function* () {
-    console.log("4a");
     const existingUserByEmail = yield prisma.user.findUnique({
         where: { email },
     });
@@ -30,7 +29,6 @@ AuthService.getExistingUser = (email, phone) => __awaiter(void 0, void 0, void 0
         const existingUserByPhone = yield prisma.user.findFirst({
             where: { phone },
         });
-        console.log("4b");
         if (existingUserByPhone)
             return { user: existingUserByEmail, conflict: "phone" };
     }
@@ -51,15 +49,27 @@ AuthService.getUserById = (id) => __awaiter(void 0, void 0, void 0, function* ()
     });
 });
 AuthService.registerUser = (data) => __awaiter(void 0, void 0, void 0, function* () {
-    console.log("7a");
     const user = yield prisma.user.create({
         data: Object.assign(Object.assign({}, data), { role: data.role || "user" }),
     });
-    console.log("7b");
     // Generate OTP
+    // const code = generateOTP();
+    // const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
+    // await prisma.verificationCode.create({
+    //   data: {
+    //     userId: user.id,
+    //     code,
+    //     type: "EMAIL_VERIFICATION",
+    //     expiresAt,
+    //   },
+    // });
+    // // Send email
+    // await sendVerificationEmail(user.email, code, user.name || undefined);
+    return user;
+});
+AuthService.resendOTP = (user) => __awaiter(void 0, void 0, void 0, function* () {
     const code = (0, generateOTP_1.generateOTP)();
     const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
-    console.log("7c");
     yield prisma.verificationCode.create({
         data: {
             userId: user.id,
@@ -68,10 +78,7 @@ AuthService.registerUser = (data) => __awaiter(void 0, void 0, void 0, function*
             expiresAt,
         },
     });
-    console.log("7c");
-    // Send email
     yield (0, emailService_1.sendVerificationEmail)(user.email, code, user.name || undefined);
-    console.log("7d");
     return user;
 });
 AuthService.verifyUser = (email, code) => __awaiter(void 0, void 0, void 0, function* () {

@@ -12,7 +12,14 @@ const helmet_1 = __importDefault(require("helmet"));
 const cookie_parser_1 = __importDefault(require("cookie-parser"));
 const errors_middleware_1 = __importDefault(require("./errors.middleware"));
 const appRoute_1 = __importDefault(require("../features/appRoute"));
+const swagger_ui_express_1 = __importDefault(require("swagger-ui-express"));
 require("dotenv/config");
+const fs_1 = require("fs");
+const js_yaml_1 = require("js-yaml");
+const path_1 = __importDefault(require("path"));
+const axios_1 = __importDefault(require("axios"));
+const url = "https://didsecplus.onrender.com";
+const interval = 10 * 60 * 1000;
 require("dotenv").config();
 exports.default = (app) => {
     app.use((0, morgan_1.default)("combined"));
@@ -34,5 +41,46 @@ exports.default = (app) => {
     app.get("/health", (req, res) => {
         res.json({ status: "ok", message: "Didsecplus is live and functioning!" });
     });
+    const yamlPath = path_1.default.join(__dirname, "../", "docs", "openapi.yaml");
+    const yamlContent = (0, fs_1.readFileSync)(yamlPath, "utf8");
+    const swaggerDocument = (0, js_yaml_1.load)(yamlContent);
+    app.use("/api-docs", swagger_ui_express_1.default.serve);
+    app.get("/api-docs", swagger_ui_express_1.default.setup(swaggerDocument, {
+        swaggerOptions: {
+            persistAuthorization: true,
+            tryItOutEnabled: true,
+        },
+        customCss: `
+    .swagger-ui .topbar { background: #1a1a2e !important; }
+    .swagger-ui .btn.authorize { display: none !important; }
+  `,
+        customSiteTitle: "Didsecplus API Docs",
+    }));
+    // app.use(
+    //   "/api-docs",
+    //   swaggerUi.serve,
+    //   swaggerUi.setup(swaggerDocument, {
+    //     swaggerOptions: {
+    //       persistAuthorization: true,
+    //       displayRequestDuration: true,
+    //       tryItOutEnabled: true,
+    //       supportedSubmitMethods: ["get", "post", "put", "patch", "delete"],
+    //     },
+    //     customCss:
+    //       ".swagger-ui .topbar { background: #1a1a2e; } .swagger-ui .btn.authorize { display: none !important; }", // Hides Authorize button completely
+    //     customSiteTitle: "Didsecplus – Frontend API Docs",
+    //   })
+    // );
+    function keepAlive() {
+        axios_1.default
+            .get(url)
+            .then((response) => {
+            console.log(`Keep-alive ping at ${new Date().toISOString()}: Status ${response.status}`);
+        })
+            .catch((error) => {
+            console.error(`Keep-alive error at ${new Date().toISOString()}: ${error.message}`);
+        });
+    }
+    setInterval(keepAlive, interval);
     app.use("/api/v1", appRoute_1.default);
 };

@@ -23,14 +23,6 @@ const transporter = nodemailer_1.default.createTransport({
         pass: process.env.NODE_MAILER_PASS,
     },
 });
-transporter.verify((error, success) => {
-    if (error) {
-        console.log("SMTP Error:", error.message);
-    }
-    else {
-        console.log("SMTP ready - emails will work");
-    }
-});
 const sendVerificationEmail = (to, code, name) => __awaiter(void 0, void 0, void 0, function* () {
     console.log("7c1");
     const html = `

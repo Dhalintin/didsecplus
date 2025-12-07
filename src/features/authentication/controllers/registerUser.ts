@@ -14,16 +14,14 @@ import {
 export class RegisterUserController {
   static async register(req: Request, res: Response): Promise<void> {
     try {
-      console.log(1);
       const { error } = userSchema.validate(req.body);
       if (error) {
         res.status(400).json({ error: error.details[0].message });
         return;
       }
-      console.log(2);
+
       const { email, phone, password, role } = req.body;
 
-      console.log(3);
       if (role) {
         if (role === "superAdmin" || role === "admin") {
           new CustomResponse(
@@ -34,31 +32,30 @@ export class RegisterUserController {
           return;
         }
       }
-      console.log(4);
 
       const requestData: User = req.body;
 
       const existingUser = await AuthService.getExistingUser(email, phone);
-      console.log(5);
+
       if (existingUser) {
+        // await AuthService.resendOTP(existingUser.user);
         new CustomResponse(
           500,
           res,
+          // `${existingUser.conflict} already in use! A verification code has been sent to your email, proceed to verify and login in or change ${existingUser.conflict}`
           `${existingUser.conflict} already in use!`
         );
         return;
       }
 
-      console.log("6");
       const hashedPassword = await hashPassword(password);
       const userData: User = {
         ...requestData,
         password: hashedPassword,
       };
-      console.log(7);
 
       const user = await AuthService.registerUser(userData);
-      console.log(8);
+
       const responseUserData = {
         id: user.id,
         email: user.email,
@@ -66,7 +63,6 @@ export class RegisterUserController {
         name: user.name,
         role: user.role,
       };
-      console.log(9);
 
       // const token = tokenService.generateToken(user.id, user.role);
       // const responseData = {
@@ -81,7 +77,7 @@ export class RegisterUserController {
         `Registration successful! Proceed to mail and verify to login`,
         responseUserData
       );
-      console.log(10);
+      // console.log(10);
 
       return;
     } catch (err: any) {
@@ -136,6 +132,34 @@ export class RegisterUserController {
         `Admin registration successfull. Proceed to mail and verify to login`,
         responseUserData
       );
+
+      return;
+    } catch (err: any) {
+      const status = err.statusCode || 500;
+      new CustomResponse(status, res, err.message);
+      return;
+    }
+  }
+
+  static async userData(req: Request, res: Response): Promise<void> {
+    try {
+      const userId = req.user.userId;
+
+      const user = await AuthService.getUserById(userId);
+
+      const userData = {
+        id: user.id,
+        email: user.email,
+        username: user.username,
+        name: user.name,
+        phone: user.phone,
+        role: user.role,
+        location: user.location,
+        device: user.device,
+        isVerified: user.isVerified,
+      };
+
+      new CustomResponse(200, res, `User data fetched successfully`, userData);
 
       return;
     } catch (err: any) {
