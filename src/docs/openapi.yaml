@@ -132,6 +132,7 @@ components:
         alert_Id: { type: string }
         assigned_to: { type: string, nullable: true }
         note: { type: string, nullable: true }
+        recipient: { type: [string], nullable: true }
 
     TicketResponse:
       type: object

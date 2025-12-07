@@ -37,10 +37,15 @@ export default (app: Application) => {
   if (process.env.NODE_ENV !== "production") configDotenv();
 
   app.use(json());
+
   app.use(urlencoded({ extended: true }));
+
   app.use(helmet());
+
   app.use(cookieParser());
+
   app.use(errorHandler);
+
   app.get("/health", (req, res) => {
     res.json({ status: "ok", message: "Didsecplus is live and functioning!" });
   });
