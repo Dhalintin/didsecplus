@@ -46,6 +46,7 @@ export class AlertController {
         longitude: Number(responseData.longitude),
         state,
         lga,
+        recipients: responseData.recipients || [],
       };
 
       const alert = await alertService.createAlert(req.user.userId, data);

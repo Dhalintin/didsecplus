@@ -11,6 +11,11 @@ const controller = new TicketController();
 ticketRoutes.get("/", authMiddleware, controller.getTickets);
 ticketRoutes.get("/:id", authMiddleware, controller.getTicket);
 ticketRoutes.post("/", authMiddleware, controller.createTicket);
+ticketRoutes.get(
+  "/details/count",
+  // authMiddleware,
+  controller.getTicketsDetails
+);
 ticketRoutes.patch("/:id", authMiddleware, controller.updateTicket);
 ticketRoutes.delete("/:id", controller.deleteTicket);
 

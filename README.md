@@ -50,6 +50,8 @@ project-root/
 
 git clone https://github.com/Dhalintin/didsecplus.git
 
+live link http://alertme.com.ng:443/api/v1
+
 ## Install Dependecies
 
 npm install
@@ -98,8 +100,25 @@ This section provides a comprehensive guide to the backend of the project, built
   - **LoginController**: `login` (validates email/password, returns JWT token), `logout` (currently returns all users).
   - **RegisterUserController**: `register` (validates input, hashes password, returns token), `logout` (currently returns all users).
 - **Endpoints**:
-  - `POST /auth/register`: Register user (`{email, username?, name?, phone?, role, device?, location?, password}`) → `{access_token, expires_in, user}` (200).
-  - `POST /auth/login`: Login (`{email, password}`) → `{access_token, expires_in, user}` (200).
+
+  - `POST /api/auth/register`
+    Registers a regular user (default role: `citizen`).
+
+    **Request Body**
+
+    ```json
+    {
+      "email": "user@example.com",
+      "phone": "+2348012345678",
+      "password": "yourStrongPassword123",
+      "username": "johndoe",
+      "name": "John Doe",
+      "role": "citizen"
+    }
+    ```
+
+  - `POST /auth/login`: Login (`{email, password}`) → `{access_token, user}` (200).
+
 - **Validation**: `loginSchema` (email, password), `userSchema` (email, username, name, phone, role, device, location, password).
 - **Integration**: Use `Authorization: Bearer <token>` for protected endpoints; validate inputs client-side.
 - **Best Practices**: Enforce password complexity client-side; handle duplicate email/phone conflicts.
@@ -200,3 +219,7 @@ This section provides a comprehensive guide to the backend of the project, built
 
 Darlington
 [Visit my GitHub](https://github.com/Dhalintin)
+
+```
+
+```

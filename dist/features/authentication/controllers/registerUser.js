@@ -13,7 +13,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.RegisterUserController = void 0;
-const jwt_1 = require("../../../utils/jwt");
 const registerUser_1 = require("../services/registerUser");
 const hash_1 = require("../../../utils/hash");
 const register_validation_1 = __importDefault(require("../../../validations/register.validation"));
@@ -38,7 +37,10 @@ class RegisterUserController {
                 const requestData = req.body;
                 const existingUser = yield registerUser_1.AuthService.getExistingUser(email, phone);
                 if (existingUser) {
-                    new response_util_1.default(500, res, `${existingUser.conflict} already in use!`);
+                    // await AuthService.resendOTP(existingUser.user);
+                    new response_util_1.default(500, res, 
+                    // `${existingUser.conflict} already in use! A verification code has been sent to your email, proceed to verify and login in or change ${existingUser.conflict}`
+                    `${existingUser.conflict} already in use!`);
                     return;
                 }
                 const hashedPassword = yield (0, hash_1.hashPassword)(password);
@@ -51,13 +53,14 @@ class RegisterUserController {
                     name: user.name,
                     role: user.role,
                 };
-                const token = jwt_1.tokenService.generateToken(user.id, user.role);
-                const responseData = {
-                    access_token: token,
-                    expires_in: 3600,
-                    user: responseUserData,
-                };
-                new response_util_1.default(200, res, `Registration successful!`, responseData);
+                // const token = tokenService.generateToken(user.id, user.role);
+                // const responseData = {
+                //   access_token: token,
+                //   expires_in: 3600,
+                //   user: responseUserData,
+                // };
+                new response_util_1.default(200, res, `Registration successful! Proceed to mail and verify to login`, responseUserData);
+                // console.log(10);
                 return;
             }
             catch (err) {
@@ -75,7 +78,7 @@ class RegisterUserController {
                     res.status(400).json({ error: error.details[0].message });
                     return;
                 }
-                const { email, phone, password = "password" } = req.body;
+                const { email, phone, password } = req.body;
                 const requestedData = req.body;
                 const existingUser = yield registerUser_1.AuthService.getExistingUser(email, phone);
                 if (existingUser) {
@@ -93,6 +96,32 @@ class RegisterUserController {
                     role: adminUser.role,
                 };
                 new response_util_1.default(200, res, `Admin registration successfull. Proceed to mail and verify to login`, responseUserData);
+                return;
+            }
+            catch (err) {
+                const status = err.statusCode || 500;
+                new response_util_1.default(status, res, err.message);
+                return;
+            }
+        });
+    }
+    static userData(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const userId = req.user.userId;
+                const user = yield registerUser_1.AuthService.getUserById(userId);
+                const userData = {
+                    id: user.id,
+                    email: user.email,
+                    username: user.username,
+                    name: user.name,
+                    phone: user.phone,
+                    role: user.role,
+                    location: user.location,
+                    device: user.device,
+                    isVerified: user.isVerified,
+                };
+                new response_util_1.default(200, res, `User data fetched successfully`, userData);
                 return;
             }
             catch (err) {

@@ -7,6 +7,7 @@ export interface AlertDTO {
   longitude: number;
   state: string;
   lga: string;
+  recipients: string[];
 }
 
 export interface GetAlertDTO {

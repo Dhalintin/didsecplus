@@ -45,10 +45,12 @@ interface RawAlert {
 
 export class AlertService {
   async createAlert(userId: string, data: AlertDTO) {
+    // Destructure recipients from data
+    const { recipients, ...alertData } = data;
     const alert = await prisma.alert.create({
       data: {
         userId,
-        ...data,
+        ...alertData,
       },
     });
     const user = await prisma.user.findUnique({
@@ -66,6 +68,17 @@ export class AlertService {
         created_by: userId,
       },
     });
+
+    if (data.recipients.length > 0) {
+      for (const recipient of data.recipients) {
+        await prisma.alertRecipient.create({
+          data: {
+            userId: recipient,
+            alertId: alert.id,
+          },
+        });
+      }
+    }
     return alert;
   }
 

@@ -77,6 +77,18 @@ export class TicketController {
     }
   }
 
+  async getTicketsDetails(req: Request, res: Response) {
+    try {
+      const tickets = await ticketService.getTicketStatusCounts();
+      new CustomResponse(200, res, "Successful", tickets);
+      return;
+    } catch (err: any) {
+      const status = err.statusCode || 500;
+      new CustomResponse(status, res, err);
+      return;
+    }
+  }
+
   async updateTicket(req: Request, res: Response) {
     try {
       const UpdateData: UpdateTicketDTO = req.body;

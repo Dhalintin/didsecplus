@@ -1,0 +1,396 @@
+openapi: 3.0.3
+info:
+  title: Didsecplus API – Frontend Developer Docs
+  description: |
+    Complete API documentation for the Didsecplus frontend team.
+
+    **Important for Frontend Developers**
+    • Almost every endpoint requires a valid JWT token
+    • Send it as header: `Authorization /:/ Bearer <your-jwt-token>`
+    • Get the token from **POST /auth/login**
+    • Store it in localStorage or secure cookie
+    • Public endpoints (no token needed): `/auth/register`, `/auth/login`, `/health`, `/reports/incidents`
+  version: 1.0.0
+  contact:
+    name: Didsecplus Dev Team
+    email: devs@didsecplus.com
+
+servers:
+  - url: http://localhost:443/api/v1
+    description: Local development
+  - url: https://api.didsecplus.com/api/v1
+    description: Production
+
+components:
+  schemas:
+    # ==================== COMMON ====================
+    ErrorResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        message:
+          type: string
+          example: "Unauthorized / Validation failed / Not found"
+
+    UserProfile:
+      type: object
+      properties:
+        id: { type: string }
+        email: { type: string, format: email }
+        username: { type: string }
+        name: { type: string }
+        phone: { type: string, nullable: true }
+        role: { type: string }
+        location: { type: string, nullable: true }
+        device: { type: string, nullable: true }
+        isVerified: { type: boolean }
+
+    # ==================== AUTH ====================
+    RegisterRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email: { type: string, format: email, example: "user@example.com" }
+        phone: { type: string, example: "+2348012345678" }
+        password:
+          { type: string, format: password, example: "MyStrongPass123!" }
+        name: { type: string, example: "John Doe" }
+        username: { type: string, example: "johndoe" }
+
+    LoginRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email: { type: string, format: email }
+        password: { type: string, format: password }
+
+    LoginResponse:
+      type: object
+      properties:
+        success: { type: boolean, example: true }
+        message: { type: string, example: "Login Successful!" }
+        data:
+          type: object
+          properties:
+            access_token: { type: string, example: "eyJhbGciOiJIUzI1NiIs..." }
+            expires_in: { type: integer, example: 3600 }
+            user:
+              $ref: "#/components/schemas/UserProfile"
+
+    # ==================== ALERTS ====================
+    CreateAlertRequest:
+      type: object
+      required: [title, source, latitude, longitude]
+      properties:
+        title: { type: string, example: "Armed robbery in progress" }
+        description: { type: string, nullable: true }
+        status:
+          {
+            type: string,
+            enum: [active, investigating, resolved],
+            default: active,
+          }
+        source: { type: string, enum: [phone, app, web] }
+        latitude: { type: number, minimum: -90, maximum: 90, example: 9.0765 }
+        longitude:
+          { type: number, minimum: -180, maximum: 180, example: 7.3986 }
+        state: { type: string }
+        lga: { type: string }
+        recipients:
+          type: array
+          items: { type: string }
+          example: ["unit-alpha", "unit-bravo"]
+
+    AlertResponse:
+      type: object
+      properties:
+        id: { type: string }
+        title: { type: string }
+        description: { type: string, nullable: true }
+        status: { type: string }
+        source: { type: string }
+        latitude: { type: number }
+        longitude: { type: number }
+        state: { type: string }
+        lga: { type: string }
+        recipients: { type: array, items: { type: string } }
+        assigned_unit: { type: string, nullable: true }
+        created_by: { type: string }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+
+    # ==================== TICKETS ====================
+    CreateTicketRequest:
+      type: object
+      required: [title, alert_Id]
+      properties:
+        title: { type: string }
+        description: { type: string, nullable: true }
+        priority: { type: string, enum: [low, mid, high], default: low }
+        alert_Id: { type: string }
+        assigned_to: { type: string, nullable: true }
+        note: { type: string, nullable: true }
+
+    TicketResponse:
+      type: object
+      properties:
+        id: { type: string }
+        title: { type: string }
+        description: { type: string, nullable: true }
+        status: { type: string, enum: [open, in_progress, resolved] }
+        priority: { type: string }
+        alert_Id: { type: string }
+        assigned_to: { type: string, nullable: true }
+        created_by: { type: string }
+        note: { type: string, nullable: true }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+
+    # ==================== USERS (ADMIN) ====================
+    UserResponse:
+      type: object
+      properties:
+        id: { type: string }
+        username: { type: string }
+        name: { type: string }
+        email: { type: string }
+        role: { type: string }
+        location: { type: string, nullable: true }
+        device: { type: string, nullable: true }
+        isVerified: { type: boolean }
+        created_at: { type: string, format: date-time }
+
+paths:
+  # ───────────────────── PUBLIC ENDPOINTS ─────────────────────
+  /auth/register:
+    post:
+      summary: Register new user (Public)
+      description: No token required
+      tags: [Authentication]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegisterRequest"
+      responses:
+        "200":
+          description: Registration successful – check email for verification
+
+  /auth/login:
+    post:
+      summary: Login → get JWT token (Public)
+      description: Save the access_token and use it for all protected endpoints
+      tags: [Authentication]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+      responses:
+        "200":
+          description: Returns JWT token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LoginResponse"
+
+  /health:
+    get:
+      summary: Health check
+      description: Public – always returns OK
+      responses:
+        "200":
+          description: Didsecplus is live!
+
+  /reports/incidents:
+    get:
+      summary: Public incident trends
+      description: No token required – safe for public dashboard
+      tags: [Reports]
+      responses:
+        "200":
+          description: Public incident statistics
+
+  # ───────────────────── PROTECTED ENDPOINTS ─────────────────────
+  /auth/me:
+    post:
+      summary: Get current user profile
+      description: Requires JWT → Authorization /:/ Bearer <token>
+      tags: [Authentication]
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: "#/components/schemas/UserProfile"
+
+  /alerts:
+    post:
+      summary: Create emergency alert
+      description: Requires JWT → Authorization /:/ Bearer <token>
+      tags: [Alerts]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateAlertRequest"
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AlertResponse"
+
+    get:
+      summary: Get alerts (with filters & pagination)
+      description: Requires JWT → Authorization /:/ Bearer <token>
+      tags: [Alerts]
+      parameters:
+        - in: query
+          name: page
+          schema: { type: integer, default: 1 }
+        - in: query
+          name: page_size
+          schema: { type: integer, default: 20, maximum: 100 }
+        - in: query
+          name: status
+          schema: { type: string, enum: [active, investigating, resolved] }
+        - in: query
+          name: state
+          schema: { type: string }
+        - in: query
+          name: lga
+          schema: { type: string }
+        - in: query
+          name: from
+          schema: { type: string, format: date }
+        - in: query
+          name: to
+          schema: { type: string, format: date }
+      responses:
+        "200":
+          description: List of alerts
+
+  /alerts/{id}:
+    get:
+      summary: Get single alert
+      description: Requires JWT → Authorization /:/ Bearer <token>
+      tags: [Alerts]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AlertResponse"
+
+  /tickets:
+    post:
+      summary: Create ticket for an alert
+      description: Requires JWT → Authorization /:/ Bearer <token>
+      tags: [Tickets]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateTicketRequest"
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TicketResponse"
+
+  /tickets/{id}:
+    get:
+      summary: Get single ticket
+      description: Requires JWT → Authorization /:/ Bearer <token>
+      tags: [Tickets]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TicketResponse"
+
+  /users:
+    post:
+      summary: Create user (Admin only)
+      description: Requires JWT → Authorization /:/ Bearer <token>
+      tags: [Users]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email: { type: string, format: email }
+                name: { type: string }
+                role: { type: string }
+      responses:
+        "201":
+          description: User created
+
+    get:
+      summary: List users (Admin only)
+      description: Requires JWT → Authorization /:/ Bearer <token>
+      tags: [Users]
+      parameters:
+        - in: query
+          name: page
+          schema: { type: integer, default: 1 }
+        - in: query
+          name: page_size
+          schema: { type: integer, default: 20 }
+        - in: query
+          name: role
+          schema: { type: string }
+      responses:
+        "200":
+          description: List of users
+
+  /reports/security:
+    get:
+      summary: Security dashboard (Admin only)
+      description: Requires JWT → Authorization /:/ Bearer <token>
+      tags: [Reports]
+      responses:
+        "200":
+          description: Security overview
+
+  /reports/user-activity:
+    get:
+      summary: User activity log (Admin only)
+      description: Requires JWT → Authorization /:/ Bearer <token>
+      tags: [Reports]
+      responses:
+        "200":
+          description: Activity report
+
+  /reports/location-analytics:
+    get:
+      summary: Location hotspot analytics (Admin only)
+      description: Requires JWT → Authorization /:/ Bearer <token>
+      tags: [Reports]
+      responses:
+        "200":
+          description: Hotspot data

@@ -1,3 +1,7 @@
+import "dotenv/config";
+
+require("dotenv").config();
+
 import nodemailer from "nodemailer";
 
 const transporter = nodemailer.createTransport({
@@ -13,6 +17,7 @@ export const sendVerificationEmail = async (
   code: string,
   name?: string
 ) => {
+  console.log("7c1");
   const html = `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #ddd; border-radius: 10px;">
       <h2>Welcome to DidSecPlus, ${name || "User"}!</h2>
@@ -28,9 +33,10 @@ export const sendVerificationEmail = async (
       <small>DidSecPlus &copy; 2025</small>
     </div>
   `;
+  console.log("7c2");
 
   await transporter.sendMail({
-    from: `"DidSecPlus" <${process.env.EMAIL_USER}>`,
+    from: `"DidSecPlus" <${process.env.NODE_MAILER_USER}>`,
     to,
     subject: "Verify Your Email - DidSecPlus",
     html,

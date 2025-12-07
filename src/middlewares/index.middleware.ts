@@ -1,47 +1,4 @@
 ///  <reference path="../types/custom.d.ts" />
-// import { Application, json, urlencoded } from "express";
-// import { configDotenv } from "dotenv";
-// import morgan from "morgan";
-// import cors from "cors";
-// import helmet from "helmet";
-// import cookieParser from "cookie-parser";
-// import errorHandler from "./errors.middleware";
-// import indexRoutes from "../features/appRoute";
-
-// export default (app: Application) => {
-//   // Logging middleware
-//   app.use(morgan("combined"));
-
-//   // CORS middleware
-//   app.use(
-//     cors({
-//       origin: "*",
-//       methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
-//       allowedHeaders: ["Content-Type", "Authorization"],
-//       credentials: true,
-//     })
-//   );
-
-//   // Configuration setup (dotenv)
-//   if (process.env.NODE_ENV !== "production") configDotenv();
-
-//   // Body parsing middleware
-//   app.use(json());
-//   app.use(urlencoded({ extended: true }));
-
-//   // Security middleware
-//   app.use(helmet());
-
-//   // Cookie parsing middleware
-//   app.use(cookieParser());
-
-//   // Custom error handling middleware
-//   app.use(errorHandler);
-
-//   // Mounting routes
-//   app.use("/api/v1", indexRoutes);
-// };
-
 import { Application, json, urlencoded } from "express";
 import { configDotenv } from "dotenv";
 import morgan from "morgan";
@@ -50,44 +7,24 @@ import helmet from "helmet";
 import cookieParser from "cookie-parser";
 import errorHandler from "./errors.middleware";
 import indexRoutes from "../features/appRoute";
+import swaggerUi from "swagger-ui-express";
+import "dotenv/config";
+
+import { readFileSync } from "fs";
+import { load } from "js-yaml";
+import path from "path";
+
+import axios from "axios";
+const url = "https://didsecplus.onrender.com";
+const interval = 10 * 60 * 1000;
+
+require("dotenv").config();
 
 export default (app: Application) => {
   app.use(morgan("combined"));
 
-  // === DYNAMIC CORS (same logic as Socket.IO) ===
-  const parseCorsOrigins = (): (string | RegExp)[] => {
-    const raw = process.env.CORS_ORIGINS;
-    if (!raw) {
-      return [/^http:\/\/localhost:30(00|01|02)$/];
-    }
-    return raw.split(",").map((origin) => {
-      const trimmed = origin.trim();
-      if (trimmed.startsWith("/") && trimmed.endsWith("/")) {
-        return new RegExp(trimmed.slice(1, -1));
-      }
-      return trimmed;
-    });
-  };
-
-  const allowedOrigins = parseCorsOrigins();
-
   app.use(
     cors({
-      // origin: (requestOrigin: string | undefined, callback: any) => {
-      //   if (!requestOrigin) return callback(null, true);
-
-      //   const isAllowed = allowedOrigins.some((pattern) =>
-      //     pattern instanceof RegExp
-      //       ? pattern.test(requestOrigin)
-      //       : pattern === requestOrigin
-      //   );
-
-      //   if (isAllowed) {
-      //     callback(null, requestOrigin);
-      //   } else {
-      //     callback(new Error(`CORS: Origin ${requestOrigin} not allowed`));
-      //   }
-      // },
       origin: "*",
       credentials: true,
       methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
@@ -104,53 +41,65 @@ export default (app: Application) => {
   app.use(helmet());
   app.use(cookieParser());
   app.use(errorHandler);
+  app.get("/health", (req, res) => {
+    res.json({ status: "ok", message: "Didsecplus is live and functioning!" });
+  });
+
+  const yamlPath = path.join(__dirname, "../", "docs", "openapi.yaml");
+  const yamlContent = readFileSync(yamlPath, "utf8");
+  const swaggerDocument = load(yamlContent) as Record<string, unknown>;
+
+  app.use("/api-docs", swaggerUi.serve);
+
+  app.get(
+    "/api-docs",
+    swaggerUi.setup(swaggerDocument, {
+      swaggerOptions: {
+        persistAuthorization: true,
+        tryItOutEnabled: true,
+      },
+      customCss: `
+    .swagger-ui .topbar { background: #1a1a2e !important; }
+    .swagger-ui .btn.authorize { display: none !important; }
+  `,
+      customSiteTitle: "Didsecplus API Docs",
+    })
+  );
+
+  // app.use(
+  //   "/api-docs",
+  //   swaggerUi.serve,
+  //   swaggerUi.setup(swaggerDocument, {
+  //     swaggerOptions: {
+  //       persistAuthorization: true,
+  //       displayRequestDuration: true,
+  //       tryItOutEnabled: true,
+  //       supportedSubmitMethods: ["get", "post", "put", "patch", "delete"],
+  //     },
+  //     customCss:
+  //       ".swagger-ui .topbar { background: #1a1a2e; } .swagger-ui .btn.authorize { display: none !important; }", // Hides Authorize button completely
+  //     customSiteTitle: "Didsecplus – Frontend API Docs",
+  //   })
+  // );
+
+  function keepAlive() {
+    axios
+      .get(url)
+      .then((response) => {
+        console.log(
+          `Keep-alive ping at ${new Date().toISOString()}: Status ${
+            response.status
+          }`
+        );
+      })
+      .catch((error) => {
+        console.error(
+          `Keep-alive error at ${new Date().toISOString()}: ${error.message}`
+        );
+      });
+  }
+
+  setInterval(keepAlive, interval);
+
   app.use("/api/v1", indexRoutes);
 };
-
-// import { Application, json, urlencoded } from "express";
-// import { configDotenv } from "dotenv";
-// import morgan from "morgan";
-// import cors from "cors";
-// import helmet from "helmet";
-// import cookieParser from "cookie-parser";
-// import errorHandler from "./errors.middleware";
-// import indexRoutes from "../features/appRoute";
-
-// export default (app: Application) => {
-//   // Logging middleware
-//   app.use(morgan("combined"));
-
-//   // CORS middleware
-//   app.use(
-//     cors({
-//       // origin: "*",
-//       origin: [
-//         "http://localhost:3000",
-//         "http://localhost:3001",
-//         "http://localhost:3002",
-//       ],
-//       methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
-//       allowedHeaders: ["Content-Type", "Authorization"],
-//       credentials: true,
-//     })
-//   );
-
-//   // Configuration setup (dotenv)
-//   if (process.env.NODE_ENV !== "production") configDotenv();
-
-//   // Body parsing middleware
-//   app.use(json());
-//   app.use(urlencoded({ extended: true }));
-
-//   // Security middleware
-//   app.use(helmet());
-
-//   // Cookie parsing middleware
-//   app.use(cookieParser());
-
-//   // Custom error handling middleware
-//   app.use(errorHandler);
-
-//   // Mounting routes
-//   app.use("/api/v1", indexRoutes);
-// };

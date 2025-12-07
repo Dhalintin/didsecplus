@@ -1,4 +1,6 @@
-import { User } from "../dtos/registerUserDto";
+import { sendVerificationEmail } from "../../../utils/emailService";
+import { generateOTP } from "../../../utils/generateOTP";
+import { User, UserResendOTP } from "../dtos/registerUserDto";
 
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
@@ -42,12 +44,48 @@ export class AuthService {
   };
 
   static registerUser = async (data: User) => {
-    return await prisma.user.create({
+    const user = await prisma.user.create({
       data: {
         ...data,
         role: data.role || "user",
       },
     });
+
+    // Generate OTP
+    // const code = generateOTP();
+    // const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
+
+    // await prisma.verificationCode.create({
+    //   data: {
+    //     userId: user.id,
+    //     code,
+    //     type: "EMAIL_VERIFICATION",
+    //     expiresAt,
+    //   },
+    // });
+
+    // // Send email
+    // await sendVerificationEmail(user.email, code, user.name || undefined);
+
+    return user;
+  };
+
+  static resendOTP = async (user: UserResendOTP) => {
+    const code = generateOTP();
+    const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
+
+    await prisma.verificationCode.create({
+      data: {
+        userId: user.id,
+        code,
+        type: "EMAIL_VERIFICATION",
+        expiresAt,
+      },
+    });
+
+    await sendVerificationEmail(user.email, code, user.name || undefined);
+
+    return user;
   };
 
   static verifyUser = async (email: string, code: string) => {

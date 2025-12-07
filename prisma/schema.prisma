@@ -62,11 +62,12 @@ model User {
   alerts            Alert[]   @relation("UserAlert")  
   
   verificationCodes VerificationCode[]
+  receivedAlerts    AlertRecipient[]
 }
 
 model Alert {
   id                String    @id @default(auto()) @map("_id") @db.ObjectId
-  userId            String?   @db.ObjectId // Made optional for onDelete: SetNull
+  userId            String?   @db.ObjectId
   user              User?     @relation("UserAlert", fields: [userId], references: [id], onDelete: SetNull)
   title             String
   description       String?
@@ -80,6 +81,8 @@ model Alert {
   created_at        DateTime  @default(now())
   updated_at        DateTime  @updatedAt
   tickets           Ticket[]  @relation("AlertTicket")
+  
+  recipients        AlertRecipient[]
 
   @@index([userId])
   @@index([status])
@@ -141,4 +144,30 @@ model VerificationCode {
   @@index([userId])
   @@index([code])
   @@index([expiresAt])
+}
+
+model AlertRecipient {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  alertId    String   @db.ObjectId
+  userId     String   @db.ObjectId
+
+  alert      Alert    @relation(fields: [alertId], references: [id], onDelete: Cascade)
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)     
+  seen       Boolean  @default(false)
+  seenAt     DateTime?
+
+  @@unique([alertId, userId])
+  @@index([alertId])
+  @@index([userId])
+}
+
+model TicketStatusSummary {
+  id            String   @id @default(auto()) @map("_id") @db.ObjectId
+  live          Int      @default(0)
+  resolved      Int      @default(0)
+  open          Int      @default(0)
+  in_progress   Int      @default(0)
+  refreshed_at  DateTime @default(now()) @updatedAt
+
+  @@unique([id])
 }

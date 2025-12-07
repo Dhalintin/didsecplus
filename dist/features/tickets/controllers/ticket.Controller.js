@@ -84,6 +84,20 @@ class TicketController {
             }
         });
     }
+    getTicketsDetails(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const tickets = yield ticketService.getTicketStatusCounts();
+                new response_util_1.default(200, res, "Successful", tickets);
+                return;
+            }
+            catch (err) {
+                const status = err.statusCode || 500;
+                new response_util_1.default(status, res, err);
+                return;
+            }
+        });
+    }
     updateTicket(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             try {

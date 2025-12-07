@@ -323,6 +323,59 @@ class TicketService {
             };
         });
     }
+    getTicketStatusCounts() {
+        return __awaiter(this, void 0, void 0, function* () {
+            // const cache = await prisma.ticketStatusSummary.findFirst({
+            //   select: {
+            //     live: true,
+            //     resolved: true,
+            //     open: true,
+            //     in_progress: true,
+            //     refreshed_at: true,
+            //   },
+            // });
+            // if (cache) {
+            //   return {
+            //     ...cache,
+            //     live: Number(cache.live),
+            //     resolved: Number(cache.resolved),
+            //     open: Number(cache.open),
+            //     in_progress: Number(cache.in_progress),
+            //     cached: true,
+            //     refreshed_at: cache.refreshed_at,
+            //   };
+            // }
+            // Step 2: Fallback to Prisma groupBy (translates to MongoDB $group aggregation)
+            // This is a single aggregation pipeline: [{ $group: { _id: "$status", count: { $sum: 1 } } }]
+            const grouped = yield prisma.ticket.groupBy({
+                by: ["status"],
+                _count: {
+                    id: true, // Counts documents per status group
+                },
+                // No where/orderBy/having needed for full counts
+            });
+            // Transform results (O(1) since only 3 possible statuses)
+            const counts = {
+                open: 0,
+                in_progress: 0,
+                resolved: 0,
+            };
+            for (const group of grouped) {
+                if (group.status in counts) {
+                    counts[group.status] = group._count.id;
+                }
+            }
+            const live = counts.open + counts.in_progress;
+            return {
+                live,
+                resolved: counts.resolved,
+                open: counts.open,
+                in_progress: counts.in_progress,
+                cached: false,
+                // refreshed_at: new Date(),
+            };
+        });
+    }
     // async getTickets(query: GetTicketDTO) {
     //   const { page, page_size, status, assigned_to, created_by, alert_Id } =
     //     query;
