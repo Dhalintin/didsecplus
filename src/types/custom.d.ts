@@ -6,3 +6,5 @@ declare module "client";
 declare module "multer";
 declare module "helmet";
 declare module "nodemailer";
+declare module "swagger-ui-express";
+declare module "js-yaml";
