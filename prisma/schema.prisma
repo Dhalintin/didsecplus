@@ -168,6 +168,4 @@ model TicketStatusSummary {
   open          Int      @default(0)
   in_progress   Int      @default(0)
   refreshed_at  DateTime @default(now()) @updatedAt
-
-  @@unique([id])
 }
