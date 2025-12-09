@@ -90,6 +90,19 @@ class AlertController {
             }
         });
     }
+    getMyAlerts(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const userId = req.user.userId;
+            try {
+                const alerts = yield alertService.getMyAlerts(userId);
+                new response_util_1.default(201, res, "Alert retrieved successfully", alerts);
+            }
+            catch (err) {
+                const status = err.statusCode || 500;
+                new response_util_1.default(status, res, err);
+            }
+        });
+    }
     // // Get alert by ID
     getAlertById(req, res) {
         return __awaiter(this, void 0, void 0, function* () {

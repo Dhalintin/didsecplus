@@ -8,6 +8,6 @@ const controller = new userController_1.UserController();
 userRoute.post("/", authMiddleware_1.authMiddleware, controller.createUser);
 userRoute.get("/:id", authMiddleware_1.authMiddleware, controller.getUser);
 userRoute.get("/", authMiddleware_1.authMiddleware, controller.getUsers);
-userRoute.patch("/:id", authMiddleware_1.authMiddleware, controller.updateUser);
+userRoute.patch("/", authMiddleware_1.authMiddleware, controller.updateUser);
 userRoute.delete("/:id", authMiddleware_1.adminAuthMiddleware, controller.deleteUser);
 exports.default = userRoute;

@@ -8,9 +8,8 @@ const controller = new ticket_Controller_1.TicketController();
 ticketRoutes.get("/", authMiddleware_1.authMiddleware, controller.getTickets);
 ticketRoutes.get("/:id", authMiddleware_1.authMiddleware, controller.getTicket);
 ticketRoutes.post("/", authMiddleware_1.authMiddleware, controller.createTicket);
-ticketRoutes.get("/details/count", 
-// authMiddleware,
-controller.getTicketsDetails);
+ticketRoutes.get("/details/count", authMiddleware_1.authMiddleware, controller.getTicketsDetails);
+ticketRoutes.get("/trail/:ticketId", authMiddleware_1.authMiddleware, controller.getTicketsDetails);
 ticketRoutes.patch("/:id", authMiddleware_1.authMiddleware, controller.updateTicket);
 ticketRoutes.delete("/:id", controller.deleteTicket);
 exports.default = ticketRoutes;

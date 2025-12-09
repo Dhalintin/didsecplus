@@ -80,7 +80,7 @@ export class UserController {
   async updateUser(req: Request, res: Response) {
     try {
       const updatedata: any = {
-        id: req.params.id,
+        id: req.user.userId,
         data: req.body,
       };
       const user = await userService.updateUser(updatedata);

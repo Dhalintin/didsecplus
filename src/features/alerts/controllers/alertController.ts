@@ -94,6 +94,19 @@ export class AlertController {
     }
   }
 
+  async getMyAlerts(req: Request, res: Response) {
+    const userId = req.user.userId;
+
+    try {
+      const alerts = await alertService.getMyAlerts(userId);
+
+      new CustomResponse(201, res, "Alert retrieved successfully", alerts);
+    } catch (err: any) {
+      const status = err.statusCode || 500;
+      new CustomResponse(status, res, err);
+    }
+  }
+
   // // Get alert by ID
   async getAlertById(req: Request, res: Response) {
     try {

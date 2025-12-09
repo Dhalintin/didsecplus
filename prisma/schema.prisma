@@ -63,6 +63,12 @@ model User {
   
   verificationCodes VerificationCode[]
   receivedAlerts    AlertRecipient[]
+
+  contacts Contact[] @relation("UserContacts")
+  contactOf Contact[] @relation("UserContactOf")
+
+  ticketChanges   TicketHistory[]  @relation("TicketHistoryChangedBy")
+  alertChanges    AlertHistory[]   @relation("AlertHistoryChangedBy")
 }
 
 model Alert {
@@ -83,6 +89,7 @@ model Alert {
   tickets           Ticket[]  @relation("AlertTicket")
   
   recipients        AlertRecipient[]
+  history           AlertHistory[]
 
   @@index([userId])
   @@index([status])
@@ -103,6 +110,7 @@ model Ticket {
   created_at        DateTime        @default(now())
   updated_at        DateTime        @updatedAt
   note              String?
+  history           TicketHistory[]
 
   @@index([created_at])
   @@index([created_by])
@@ -168,4 +176,56 @@ model TicketStatusSummary {
   open          Int      @default(0)
   in_progress   Int      @default(0)
   refreshed_at  DateTime @default(now()) @updatedAt
+}
+
+model Contact {
+  id              String      @id @default(auto()) @map("_id") @db.ObjectId
+  userId          String      @db.ObjectId
+  contactUserId   String      @db.ObjectId
+  createdAt       DateTime    @default(now())
+
+  user            User        @relation("UserContacts", fields: [userId], references: [id], onDelete: Cascade)
+  contactUser     User        @relation("UserContactOf", fields: [contactUserId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, contactUserId])
+  @@index([userId])
+  @@index([contactUserId])
+}
+
+model TicketHistory {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  ticketId     String   @db.ObjectId
+  ticket       Ticket   @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+
+  changedById  String?  @db.ObjectId
+  changedBy    User?    @relation("TicketHistoryChangedBy", fields: [changedById], references: [id], onDelete: SetNull)
+
+  field        String
+  oldValue     String?
+  newValue     String?
+  comment      String?
+  createdAt    DateTime @default(now())
+
+  @@index([ticketId])
+  @@index([createdAt])
+  @@index([changedById])
+}
+
+model AlertHistory {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  alertId      String   @db.ObjectId
+  alert        Alert    @relation(fields: [alertId], references: [id], onDelete: Cascade)
+
+  changedById  String?  @db.ObjectId
+  changedBy    User?    @relation("AlertHistoryChangedBy", fields: [changedById], references: [id], onDelete: SetNull)
+
+  field        String
+  oldValue     String?
+  newValue     String?
+  comment      String?
+  createdAt    DateTime @default(now())
+
+  @@index([alertId])
+  @@index([createdAt])
+  @@index([changedById])
 }

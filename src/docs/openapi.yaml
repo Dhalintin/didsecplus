@@ -22,6 +22,11 @@ servers:
     description: Production
 
 components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
   schemas:
     # ==================== COMMON ====================
     ErrorResponse:
@@ -163,6 +168,43 @@ components:
         isVerified: { type: boolean }
         created_at: { type: string, format: date-time }
 
+    Alert:
+      type: object
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+        state:
+          type: string
+        lga:
+          type: string
+        latitude:
+          type: number
+        longitude:
+          type: number
+        recipients:
+          type: array
+          items:
+            type: string
+        createdAt:
+          type: string
+          format: date-time
+
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+        firstname:
+          type: string
+        lastname:
+          type: string
+        avatar:
+          type: string
+
 paths:
   # ───────────────────── PUBLIC ENDPOINTS ─────────────────────
   /auth/register:
@@ -199,6 +241,39 @@ paths:
               schema:
                 $ref: "#/components/schemas/LoginResponse"
 
+  /auth/change-password:
+    post:
+      tags:
+        - Authentication
+      summary: Change user password
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - currentPassword
+                - newPassword
+              properties:
+                currentPassword:
+                  type: string
+                newPassword:
+                  type: string
+      responses:
+        "200":
+          description: Password changed successfully
+        "400":
+          description: Incorrect password or invalid input
+        "401":
+          description: Unauthorized
+        "404":
+          description: User not found
+        "500":
+          description: Server error
+
   /health:
     get:
       summary: Health check
@@ -232,53 +307,109 @@ paths:
                   data:
                     $ref: "#/components/schemas/UserProfile"
 
+  # /alerts:
+  #   post:
+  #     summary: Create emergency alert
+  #     description: Requires JWT → Authorization /:/ Bearer <token>
+  #     tags: [Alerts]
+  #     requestBody:
+  #       required: true
+  #       content:
+  #         application/json:
+  #           schema:
+  #             $ref: "#/components/schemas/CreateAlertRequest"
+  #     responses:
+  #       "201":
+  #         content:
+  #           application/json:
+  #             schema:
+  #               $ref: "#/components/schemas/AlertResponse"
+
+  #   get:
+  #     summary: Get alerts (with filters & pagination)
+  #     description: Requires JWT → Authorization /:/ Bearer <token>
+  #     tags: [Alerts]
+  #     parameters:
+  #       - in: query
+  #         name: page
+  #         schema: { type: integer, default: 1 }
+  #       - in: query
+  #         name: page_size
+  #         schema: { type: integer, default: 20, maximum: 100 }
+  #       - in: query
+  #         name: status
+  #         schema: { type: string, enum: [active, investigating, resolved] }
+  #       - in: query
+  #         name: state
+  #         schema: { type: string }
+  #       - in: query
+  #         name: lga
+  #         schema: { type: string }
+  #       - in: query
+  #         name: from
+  #         schema: { type: string, format: date }
+  #       - in: query
+  #         name: to
+  #         schema: { type: string, format: date }
+  #     responses:
+  #       "200":
+  #         description: List of alerts
+
   /alerts:
     post:
-      summary: Create emergency alert
-      description: Requires JWT → Authorization /:/ Bearer <token>
-      tags: [Alerts]
+      tags:
+        - Alerts
+      summary: Create a new alert
+      security:
+        - bearerAuth: []
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/CreateAlertRequest"
+              type: object
+              required:
+                - title
+                - description
+                - latitude
+                - longitude
+              properties:
+                title:
+                  type: string
+                description:
+                  type: string
+                latitude:
+                  type: number
+                longitude:
+                  type: number
+                state:
+                  type: string
+                  description: Optional; auto-detected if not provided.
+                lga:
+                  type: string
+                  description: Optional; auto-detected if not provided.
+                recipients:
+                  type: array
+                  items:
+                    type: string
       responses:
         "201":
+          description: Alert created successfully
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/AlertResponse"
-
-    get:
-      summary: Get alerts (with filters & pagination)
-      description: Requires JWT → Authorization /:/ Bearer <token>
-      tags: [Alerts]
-      parameters:
-        - in: query
-          name: page
-          schema: { type: integer, default: 1 }
-        - in: query
-          name: page_size
-          schema: { type: integer, default: 20, maximum: 100 }
-        - in: query
-          name: status
-          schema: { type: string, enum: [active, investigating, resolved] }
-        - in: query
-          name: state
-          schema: { type: string }
-        - in: query
-          name: lga
-          schema: { type: string }
-        - in: query
-          name: from
-          schema: { type: string, format: date }
-        - in: query
-          name: to
-          schema: { type: string, format: date }
-      responses:
-        "200":
-          description: List of alerts
+                type: object
+                properties:
+                  message:
+                    type: string
+                  data:
+                    $ref: "#/components/schemas/Alert"
+        "400":
+          description: Bad request (validation failed)
+        "401":
+          description: Unauthorized
+        "500":
+          description: Server error
 
   /alerts/{id}:
     get:
@@ -296,6 +427,100 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/AlertResponse"
+
+  /contacts:
+    post:
+      tags:
+        - Contacts
+      summary: Add a contact
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - contactUserId
+              properties:
+                contactUserId:
+                  type: string
+      responses:
+        "201":
+          description: Contact added
+        "400":
+          description: contactUserId missing or invalid
+        "401":
+          description: Unauthorized
+
+    delete:
+      tags:
+        - Contacts
+      summary: Remove a contact
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - contactUserId
+              properties:
+                contactUserId:
+                  type: string
+      responses:
+        "200":
+          description: Contact removed
+        "400":
+          description: contactUserId missing or invalid
+        "401":
+          description: Unauthorized
+
+    get:
+      tags:
+        - Contacts
+      summary: Get all contacts for authenticated user
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: List of contacts
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  contacts:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/User"
+        "500":
+          description: Server error
+
+  /contacts/search:
+    get:
+      tags:
+        - Contacts
+      summary: Search for contacts
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: q
+          required: true
+          schema:
+            type: string
+          description: Search keyword
+      responses:
+        "200":
+          description: Users matching search criteria
+        "401":
+          description: Unauthorized
+        "500":
+          description: Server error
 
   /tickets:
     post:
