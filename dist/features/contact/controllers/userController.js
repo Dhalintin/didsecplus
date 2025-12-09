@@ -13,11 +13,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.UserController = void 0;
-const user_service_1 = require("../services/user.service");
+const contact_service_1 = require("../services/contact.service");
 const response_util_1 = __importDefault(require("../../../utils/helpers/response.util"));
 const registerUser_1 = require("../../authentication/services/registerUser");
 const user_validation_1 = require("../../../validations/user.validation");
-const userService = new user_service_1.UserService();
+const userService = new contact_service_1.UserService();
 class UserController {
     createUser(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -83,7 +83,7 @@ class UserController {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 const updatedata = {
-                    id: req.user.userId,
+                    id: req.params.id,
                     data: req.body,
                 };
                 const user = yield userService.updateUser(updatedata);

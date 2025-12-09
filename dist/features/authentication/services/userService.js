@@ -15,8 +15,45 @@ const generateOTP_1 = require("../../../utils/generateOTP");
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 // import bcrypt from "bcryptjs";
+// export const createUserByAdmin = async (data: adminUser) => {
+//   //   const hashedPassword = await bcrypt.hash(data.password, 10);
+//   const user = await prisma.user.create({
+//     data: {
+//       email: data.email,
+//       password: data.password,
+//       name: data.name,
+//       username: data.username,
+//       role: data.role,
+//       phone: data.phone || null,
+//       isVerified: false,
+//     },
+//   });
+//   // Generate OTP
+//   const code = generateOTP();
+//   const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
+//   await prisma.verificationCode.create({
+//     data: {
+//       userId: user.id,
+//       code,
+//       type: "EMAIL_VERIFICATION",
+//       expiresAt,
+//     },
+//   });
+//   // Send email
+//   await sendVerificationEmail(user.email, code, user.name || undefined);
+//   return user;
+//   //   return {
+//   //     success: true,
+//   //     message: "User created. Verification email sent.",
+//   //     user: {
+//   //       id: user.id,
+//   //       email: user.email,
+//   //       name: user.name,
+//   //       role: user.role,
+//   //     },
+//   //   };
+// };
 const createUserByAdmin = (data) => __awaiter(void 0, void 0, void 0, function* () {
-    //   const hashedPassword = await bcrypt.hash(data.password, 10);
     const user = yield prisma.user.create({
         data: {
             email: data.email,
@@ -29,29 +66,22 @@ const createUserByAdmin = (data) => __awaiter(void 0, void 0, void 0, function* 
         },
     });
     // Generate OTP
-    const code = (0, generateOTP_1.generateOTP)();
-    const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
-    yield prisma.verificationCode.create({
-        data: {
-            userId: user.id,
-            code,
-            type: "EMAIL_VERIFICATION",
-            expiresAt,
-        },
-    });
-    // Send email
-    yield (0, emailService_1.sendVerificationEmail)(user.email, code, user.name || undefined);
+    // const code = generateOTP();
+    // const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
+    // await prisma.verificationCode.create({
+    //   data: {
+    //     userId: user.id,
+    //     code,
+    //     type: "EMAIL_VERIFICATION",
+    //     expiresAt,
+    //   },
+    // });
+    // sendVerificationEmail(user.email, code, user.name || undefined).catch(
+    //   (err) => {
+    //     console.error("Failed to send verification email:", err);
+    //   }
+    // );
     return user;
-    //   return {
-    //     success: true,
-    //     message: "User created. Verification email sent.",
-    //     user: {
-    //       id: user.id,
-    //       email: user.email,
-    //       name: user.name,
-    //       role: user.role,
-    //     },
-    //   };
 });
 exports.createUserByAdmin = createUserByAdmin;
 const verifyUser = (user) => __awaiter(void 0, void 0, void 0, function* () {

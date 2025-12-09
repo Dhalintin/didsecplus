@@ -45,7 +45,7 @@ interface RawAlert {
 
 export class AlertService {
   async createAlert(userId: string, data: AlertDTO) {
-    // Destructure recipients from data
+    let responseAlert;
     const { recipients, ...alertData } = data;
     const alert = await prisma.alert.create({
       data: {
@@ -78,6 +78,19 @@ export class AlertService {
           },
         });
       }
+    }
+
+    if (data.recipients.length > 0) {
+      console.log("True");
+      responseAlert = await prisma.alert.findUnique({
+        where: { id: alert.id },
+        include: {
+          recipients: true,
+        },
+      });
+    } else {
+      console.log("False");
+      responseAlert = alert;
     }
     return alert;
   }
@@ -127,6 +140,7 @@ export class AlertService {
       longitude: alert.longitude,
       state: alert.state,
       lga: alert.lga,
+      recipients: alert.recipients,
       assigned_unit: alert.assigned_unit || null,
       created_at: alert.created_at?.$date || alert.created_at,
       updated_at: alert.updated_at?.$date || alert.updated_at,
@@ -198,6 +212,17 @@ export class AlertService {
     //   data: transformedData,
     //   meta: { total, page, page_size: limit },
     // };
+  }
+
+  async getMyAlerts(userId: string) {
+    return await prisma.alert.findMany({
+      where: {
+        userId,
+      },
+      include: {
+        recipients: true,
+      },
+    });
   }
 
   async getAlertById(id: string) {

@@ -26,7 +26,7 @@ const prisma = new client_1.PrismaClient();
 class AlertService {
     createAlert(userId, data) {
         return __awaiter(this, void 0, void 0, function* () {
-            // Destructure recipients from data
+            let responseAlert;
             const { recipients } = data, alertData = __rest(data, ["recipients"]);
             const alert = yield prisma.alert.create({
                 data: Object.assign({ userId }, alertData),
@@ -55,6 +55,19 @@ class AlertService {
                         },
                     });
                 }
+            }
+            if (data.recipients.length > 0) {
+                console.log("True");
+                responseAlert = yield prisma.alert.findUnique({
+                    where: { id: alert.id },
+                    include: {
+                        recipients: true,
+                    },
+                });
+            }
+            else {
+                console.log("False");
+                responseAlert = alert;
             }
             return alert;
         });
@@ -108,6 +121,7 @@ class AlertService {
                     longitude: alert.longitude,
                     state: alert.state,
                     lga: alert.lga,
+                    recipients: alert.recipients,
                     assigned_unit: alert.assigned_unit || null,
                     created_at: ((_c = alert.created_at) === null || _c === void 0 ? void 0 : _c.$date) || alert.created_at,
                     updated_at: ((_d = alert.updated_at) === null || _d === void 0 ? void 0 : _d.$date) || alert.updated_at,
@@ -171,6 +185,18 @@ class AlertService {
             //   data: transformedData,
             //   meta: { total, page, page_size: limit },
             // };
+        });
+    }
+    getMyAlerts(userId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return yield prisma.alert.findMany({
+                where: {
+                    userId,
+                },
+                include: {
+                    recipients: true,
+                },
+            });
         });
     }
     getAlertById(id) {

@@ -13,7 +13,12 @@ ticketRoutes.get("/:id", authMiddleware, controller.getTicket);
 ticketRoutes.post("/", authMiddleware, controller.createTicket);
 ticketRoutes.get(
   "/details/count",
-  // authMiddleware,
+  authMiddleware,
+  controller.getTicketsDetails
+);
+ticketRoutes.get(
+  "/trail/:ticketId",
+  authMiddleware,
   controller.getTicketsDetails
 );
 ticketRoutes.patch("/:id", authMiddleware, controller.updateTicket);

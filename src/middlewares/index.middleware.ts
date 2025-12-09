@@ -15,6 +15,7 @@ import { load } from "js-yaml";
 import path from "path";
 
 import axios from "axios";
+import { applyIndexes } from "../utils/schema_indexing";
 const url = "https://didsecplus.onrender.com";
 const interval = 10 * 60 * 1000;
 

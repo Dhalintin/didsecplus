@@ -7,6 +7,7 @@ const express_1 = __importDefault(require("express"));
 const registerUser_1 = require("../controllers/registerUser");
 const authMiddleware_1 = require("../../../middlewares/authMiddleware");
 const loginUser_1 = require("../controllers/loginUser");
+const changePassword_1 = require("../controllers/changePassword");
 const authRouter = express_1.default.Router();
 authRouter.post("/register", registerUser_1.RegisterUserController.register);
 authRouter.post("/login", loginUser_1.LoginController.login);
@@ -14,4 +15,7 @@ authRouter.post("/me", authMiddleware_1.authMiddleware, registerUser_1.RegisterU
 authRouter.post("/admin/register", registerUser_1.RegisterUserController.adminCreation);
 authRouter.post("/admin/resend-code", registerUser_1.RegisterUserController.resendCode);
 authRouter.post("/admin/verification", registerUser_1.RegisterUserController.adminVerification);
+authRouter.post("/reset-password", authMiddleware_1.authMiddleware, changePassword_1.PasswordController.resetPassword);
+authRouter.post("/forgot-password", authMiddleware_1.authMiddleware, changePassword_1.PasswordController.forgotPassword);
+authRouter.post("/change-password", authMiddleware_1.authMiddleware, changePassword_1.PasswordController.changePassword);
 exports.default = authRouter;

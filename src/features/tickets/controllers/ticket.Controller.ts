@@ -3,12 +3,14 @@ import { TicketService } from "../services/ticket";
 import { ticketSchema } from "../../../validations/ticket.validation";
 import CustomResponse from "../../../utils/helpers/response.util";
 import { AuthService } from "../../authentication/services/registerUser";
+import { AuditService } from "../services/audit.service";
 import {
   CreateTicketDTO,
   GetTicketDTO,
   UpdateTicketDTO,
 } from "../dtos/ticket.dto";
 const ticketService = new TicketService();
+const ticketAuditService = new AuditService();
 
 export class TicketController {
   async createTicket(req: Request, res: Response) {
@@ -89,12 +91,28 @@ export class TicketController {
     }
   }
 
+  async trailTicket(req: Request, res: Response) {
+    try {
+      const ticketTrail = await ticketAuditService.getTicketTrail(
+        req.params.ticketId
+      );
+      new CustomResponse(200, res, "Successful", ticketTrail);
+      return;
+    } catch (err: any) {
+      const status = err.statusCode || 500;
+      new CustomResponse(status, res, err);
+      return;
+    }
+  }
+
   async updateTicket(req: Request, res: Response) {
     try {
+      const userId = req.body.userId;
       const UpdateData: UpdateTicketDTO = req.body;
       const result = await ticketService.updateTicket(
         req.params.id,
-        UpdateData
+        UpdateData,
+        userId
       );
       new CustomResponse(200, res, "Ticket updated successfully", result);
       return;

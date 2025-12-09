@@ -12,6 +12,8 @@ alertRoutes.post("/", authMiddleware, controller.createAlert);
 
 alertRoutes.get("/", authMiddleware, controller.getAlerts);
 
+alertRoutes.get("/my-alerts", authMiddleware, controller.getMyAlerts);
+
 alertRoutes.get("/:id", authMiddleware, controller.getAlertById);
 
 alertRoutes.patch("/:id", authMiddleware, controller.updateAlert);

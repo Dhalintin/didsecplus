@@ -7,6 +7,7 @@ const alertRoutes = (0, express_1.Router)();
 const controller = new alertController_1.AlertController();
 alertRoutes.post("/", authMiddleware_1.authMiddleware, controller.createAlert);
 alertRoutes.get("/", authMiddleware_1.authMiddleware, controller.getAlerts);
+alertRoutes.get("/my-alerts", authMiddleware_1.authMiddleware, controller.getMyAlerts);
 alertRoutes.get("/:id", authMiddleware_1.authMiddleware, controller.getAlertById);
 alertRoutes.patch("/:id", authMiddleware_1.authMiddleware, controller.updateAlert);
 alertRoutes.delete("/:id", authMiddleware_1.adminAuthMiddleware, controller.deleteAlert);

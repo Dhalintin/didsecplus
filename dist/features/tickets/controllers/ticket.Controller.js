@@ -16,7 +16,9 @@ exports.TicketController = void 0;
 const ticket_1 = require("../services/ticket");
 const ticket_validation_1 = require("../../../validations/ticket.validation");
 const response_util_1 = __importDefault(require("../../../utils/helpers/response.util"));
+const audit_service_1 = require("../services/audit.service");
 const ticketService = new ticket_1.TicketService();
+const ticketAuditService = new audit_service_1.AuditService();
 class TicketController {
     createTicket(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -98,11 +100,26 @@ class TicketController {
             }
         });
     }
+    trailTicket(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const ticketTrail = yield ticketAuditService.getTicketTrail(req.params.ticketId);
+                new response_util_1.default(200, res, "Successful", ticketTrail);
+                return;
+            }
+            catch (err) {
+                const status = err.statusCode || 500;
+                new response_util_1.default(status, res, err);
+                return;
+            }
+        });
+    }
     updateTicket(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
+                const userId = req.body.userId;
                 const UpdateData = req.body;
-                const result = yield ticketService.updateTicket(req.params.id, UpdateData);
+                const result = yield ticketService.updateTicket(req.params.id, UpdateData, userId);
                 new response_util_1.default(200, res, "Ticket updated successfully", result);
                 return;
             }
