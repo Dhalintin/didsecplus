@@ -6,14 +6,12 @@ const prisma = new PrismaClient();
 
 export class UserService {
   async createUser(data: any) {
-    console.log("Cross 3");
     const user = await prisma.user.create({
       data: {
         ...data,
         role: data.role || "user",
       },
     });
-    console.log("Cross 4");
 
     return user;
   }
