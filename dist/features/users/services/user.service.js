@@ -15,11 +15,9 @@ const prisma = new client_1.PrismaClient();
 class UserService {
     createUser(data) {
         return __awaiter(this, void 0, void 0, function* () {
-            console.log("Cross 3");
             const user = yield prisma.user.create({
                 data: Object.assign(Object.assign({}, data), { role: data.role || "user" }),
             });
-            console.log("Cross 4");
             return user;
         });
     }

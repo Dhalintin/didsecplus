@@ -66,21 +66,19 @@ const createUserByAdmin = (data) => __awaiter(void 0, void 0, void 0, function* 
         },
     });
     // Generate OTP
-    // const code = generateOTP();
-    // const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
-    // await prisma.verificationCode.create({
-    //   data: {
-    //     userId: user.id,
-    //     code,
-    //     type: "EMAIL_VERIFICATION",
-    //     expiresAt,
-    //   },
-    // });
-    // sendVerificationEmail(user.email, code, user.name || undefined).catch(
-    //   (err) => {
-    //     console.error("Failed to send verification email:", err);
-    //   }
-    // );
+    const code = (0, generateOTP_1.generateOTP)();
+    const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
+    yield prisma.verificationCode.create({
+        data: {
+            userId: user.id,
+            code,
+            type: "EMAIL_VERIFICATION",
+            expiresAt,
+        },
+    });
+    (0, emailService_1.sendVerificationEmail)(user.email, code, user.name || undefined).catch((err) => {
+        console.error("Failed to send verification email:", err);
+    });
     return user;
 });
 exports.createUserByAdmin = createUserByAdmin;
@@ -120,7 +118,9 @@ const resendVerificationCode = (user) => __awaiter(void 0, void 0, void 0, funct
             expiresAt,
         },
     });
-    yield (0, emailService_1.sendVerificationEmail)(user.email, code, user.name || undefined);
+    (0, emailService_1.sendVerificationEmail)(user.email, code, user.name || undefined).catch((err) => {
+        console.error("Failed to send verification email:", err);
+    });
     return { success: true, message: "New code sent!" };
 });
 exports.resendVerificationCode = resendVerificationCode;

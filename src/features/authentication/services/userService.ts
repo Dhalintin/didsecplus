@@ -66,23 +66,23 @@ export const createUserByAdmin = async (data: adminUser) => {
   });
 
   // Generate OTP
-  // const code = generateOTP();
-  // const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
+  const code = generateOTP();
+  const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
 
-  // await prisma.verificationCode.create({
-  //   data: {
-  //     userId: user.id,
-  //     code,
-  //     type: "EMAIL_VERIFICATION",
-  //     expiresAt,
-  //   },
-  // });
+  await prisma.verificationCode.create({
+    data: {
+      userId: user.id,
+      code,
+      type: "EMAIL_VERIFICATION",
+      expiresAt,
+    },
+  });
 
-  // sendVerificationEmail(user.email, code, user.name || undefined).catch(
-  //   (err) => {
-  //     console.error("Failed to send verification email:", err);
-  //   }
-  // );
+  sendVerificationEmail(user.email, code, user.name || undefined).catch(
+    (err) => {
+      console.error("Failed to send verification email:", err);
+    }
+  );
 
   return user;
 };
@@ -128,7 +128,11 @@ export const resendVerificationCode = async (user: any) => {
     },
   });
 
-  await sendVerificationEmail(user.email, code, user.name || undefined);
+  sendVerificationEmail(user.email, code, user.name || undefined).catch(
+    (err) => {
+      console.error("Failed to send verification email:", err);
+    }
+  );
 
   return { success: true, message: "New code sent!" };
 };
