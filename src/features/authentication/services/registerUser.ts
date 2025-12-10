@@ -88,12 +88,34 @@ export class AuthService {
     return user;
   };
 
-  static verifyUser = async (email: string, code: string) => {
+  static sendLoginOTP = async (user: UserResendOTP) => {
+    const code = generateOTP();
+    const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
+
+    await prisma.verificationCode.create({
+      data: {
+        userId: user.id,
+        code,
+        type: "LOGIN_VERIFICATION",
+        expiresAt,
+      },
+    });
+
+    await sendVerificationEmail(user.email, code, user.name || undefined);
+
+    return user;
+  };
+
+  static verifyUser = async (
+    email: string,
+    code: string,
+    verification_type?: string
+  ) => {
     const verification = await prisma.verificationCode.findFirst({
       where: {
         user: { email },
         code,
-        type: "EMAIL_VERIFICATION",
+        // type: verification_type || "EMAIL_VERIFICATION",
         used: false,
         expiresAt: { gt: new Date() },
       },

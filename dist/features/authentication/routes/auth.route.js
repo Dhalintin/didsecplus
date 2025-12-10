@@ -11,6 +11,8 @@ const changePassword_1 = require("../controllers/changePassword");
 const authRouter = express_1.default.Router();
 authRouter.post("/register", registerUser_1.RegisterUserController.register);
 authRouter.post("/login", loginUser_1.LoginController.login);
+authRouter.post("/admin/login", loginUser_1.LoginController.adminLogin);
+authRouter.post("/admin/completeLogin", loginUser_1.LoginController.completeLogin);
 authRouter.post("/me", authMiddleware_1.authMiddleware, registerUser_1.RegisterUserController.userData);
 authRouter.post("/admin/register", registerUser_1.RegisterUserController.adminCreation);
 authRouter.post("/admin/resend-code", registerUser_1.RegisterUserController.resendCode);

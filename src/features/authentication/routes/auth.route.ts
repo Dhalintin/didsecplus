@@ -11,6 +11,10 @@ authRouter.post("/register", RegisterUserController.register);
 
 authRouter.post("/login", LoginController.login);
 
+authRouter.post("/admin/login", LoginController.adminLogin);
+
+authRouter.post("/admin/completeLogin", LoginController.completeLogin);
+
 authRouter.post("/me", authMiddleware, RegisterUserController.userData);
 
 authRouter.post("/admin/register", RegisterUserController.adminCreation);
