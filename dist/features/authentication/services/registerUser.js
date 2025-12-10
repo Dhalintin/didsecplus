@@ -81,12 +81,26 @@ AuthService.resendOTP = (user) => __awaiter(void 0, void 0, void 0, function* ()
     yield (0, emailService_1.sendVerificationEmail)(user.email, code, user.name || undefined);
     return user;
 });
-AuthService.verifyUser = (email, code) => __awaiter(void 0, void 0, void 0, function* () {
+AuthService.sendLoginOTP = (user) => __awaiter(void 0, void 0, void 0, function* () {
+    const code = (0, generateOTP_1.generateOTP)();
+    const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
+    yield prisma.verificationCode.create({
+        data: {
+            userId: user.id,
+            code,
+            type: "LOGIN_VERIFICATION",
+            expiresAt,
+        },
+    });
+    yield (0, emailService_1.sendVerificationEmail)(user.email, code, user.name || undefined);
+    return user;
+});
+AuthService.verifyUser = (email, code, verification_type) => __awaiter(void 0, void 0, void 0, function* () {
     const verification = yield prisma.verificationCode.findFirst({
         where: {
             user: { email },
             code,
-            type: "EMAIL_VERIFICATION",
+            // type: verification_type || "EMAIL_VERIFICATION",
             used: false,
             expiresAt: { gt: new Date() },
         },

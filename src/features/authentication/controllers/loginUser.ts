@@ -66,6 +66,115 @@ export class LoginController {
     }
   }
 
+  static async adminLogin(req: Request, res: Response): Promise<void> {
+    try {
+      const { error } = loginSchema.validate(req.body);
+      if (error) {
+        new CustomResponse(400, res, error.details[0].message);
+        return;
+      }
+      const { email, password } = req.body;
+
+      const user = await AuthService.getUserByEmail(email);
+
+      if (!user) {
+        new CustomResponse(404, res, "User Email or Password incorrect!");
+        return;
+      }
+
+      if (user.role === "citizen") {
+        new CustomResponse(
+          401,
+          res,
+          "Wrong endpoint for user role. Please use the correct login portal."
+        );
+        return;
+      }
+
+      if (
+        !user.password ||
+        (user.password && !(await comparePassword(password, user.password)))
+      ) {
+        new CustomResponse(404, res, "User Email or Password incorrect!");
+
+        return;
+      }
+
+      await AuthService.resendOTP(user);
+
+      const responData = {
+        id: user.id,
+        email: user.email,
+        username: user.username,
+        name: user.name,
+        role: user.role,
+      };
+
+      new CustomResponse(
+        200,
+        res,
+        "Login Token Sent to your email!",
+        responData
+      );
+      return;
+    } catch (err: any) {
+      const status = err.statusCode || 500;
+      new CustomResponse(status, res, err.message);
+      return;
+    }
+  }
+
+  static async completeLogin(req: Request, res: Response): Promise<void> {
+    try {
+      const { email, code } = await req.body;
+
+      if (!email || !code) {
+        new CustomResponse(400, res, "Email and code required");
+        return;
+      }
+
+      const isVerified = await AuthService.verifyUser(
+        email,
+        code,
+        "LOGIN_VERIFICATION"
+      );
+
+      if (!isVerified) {
+        new CustomResponse(404, res, "Invalid code!");
+        return;
+      }
+
+      const user = await AuthService.getUserByEmail(email);
+
+      if (!user) {
+        new CustomResponse(404, res, "User Email or Password incorrect!");
+        return;
+      }
+
+      const token = tokenService.generateToken(user.id, user.role);
+
+      const userData = {
+        id: user.id,
+        email: user.email,
+        username: user.username,
+        name: user.name,
+        role: user.role,
+      };
+
+      const responData = {
+        access_token: token,
+        expires_in: 3600,
+        user: userData,
+      };
+      new CustomResponse(200, res, "Login Successful!", responData);
+      return;
+    } catch (err: any) {
+      const status = err.statusCode || 500;
+      new CustomResponse(status, res, err.message);
+      return;
+    }
+  }
+
   static async logout(req: Request, res: Response): Promise<void> {
     try {
       const users = await AuthService.getUserUsers();

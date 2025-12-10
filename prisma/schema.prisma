@@ -137,6 +137,7 @@ model Lga {
 enum VerificationCodeType {
   EMAIL_VERIFICATION
   PASSWORD_RESET
+  LOGIN_VERIFICATION
 }
 
 model VerificationCode {

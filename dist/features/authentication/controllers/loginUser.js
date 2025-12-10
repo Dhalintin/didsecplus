@@ -71,6 +71,88 @@ class LoginController {
             }
         });
     }
+    static adminLogin(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const { error } = login_validation_1.loginSchema.validate(req.body);
+                if (error) {
+                    new response_util_1.default(400, res, error.details[0].message);
+                    return;
+                }
+                const { email, password } = req.body;
+                const user = yield registerUser_1.AuthService.getUserByEmail(email);
+                if (!user) {
+                    new response_util_1.default(404, res, "User Email or Password incorrect!");
+                    return;
+                }
+                if (user.role === "citizen") {
+                    new response_util_1.default(401, res, "Wrong endpoint for user role. Please use the correct login portal.");
+                    return;
+                }
+                if (!user.password ||
+                    (user.password && !(yield (0, hash_1.comparePassword)(password, user.password)))) {
+                    new response_util_1.default(404, res, "User Email or Password incorrect!");
+                    return;
+                }
+                yield registerUser_1.AuthService.resendOTP(user);
+                const responData = {
+                    id: user.id,
+                    email: user.email,
+                    username: user.username,
+                    name: user.name,
+                    role: user.role,
+                };
+                new response_util_1.default(200, res, "Login Token Sent to your email!", responData);
+                return;
+            }
+            catch (err) {
+                const status = err.statusCode || 500;
+                new response_util_1.default(status, res, err.message);
+                return;
+            }
+        });
+    }
+    static completeLogin(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const { email, code } = yield req.body;
+                if (!email || !code) {
+                    new response_util_1.default(400, res, "Email and code required");
+                    return;
+                }
+                const isVerified = yield registerUser_1.AuthService.verifyUser(email, code, "LOGIN_VERIFICATION");
+                if (!isVerified) {
+                    new response_util_1.default(404, res, "Invalid code!");
+                    return;
+                }
+                const user = yield registerUser_1.AuthService.getUserByEmail(email);
+                if (!user) {
+                    new response_util_1.default(404, res, "User Email or Password incorrect!");
+                    return;
+                }
+                const token = jwt_1.tokenService.generateToken(user.id, user.role);
+                const userData = {
+                    id: user.id,
+                    email: user.email,
+                    username: user.username,
+                    name: user.name,
+                    role: user.role,
+                };
+                const responData = {
+                    access_token: token,
+                    expires_in: 3600,
+                    user: userData,
+                };
+                new response_util_1.default(200, res, "Login Successful!", responData);
+                return;
+            }
+            catch (err) {
+                const status = err.statusCode || 500;
+                new response_util_1.default(status, res, err.message);
+                return;
+            }
+        });
+    }
     static logout(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
