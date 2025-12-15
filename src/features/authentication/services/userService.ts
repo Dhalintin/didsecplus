@@ -101,7 +101,7 @@ export const createUserByAdmin = async (data: adminUser) => {
     html,
   };
 
-  sendVerificationEmail(mailData).catch((err) => {
+  await sendVerificationEmail(mailData).catch((err) => {
     console.error("Failed to send verification email:", err);
   });
 
@@ -194,4 +194,11 @@ export const resendVerificationCode = async (user: any) => {
   });
 
   return { success: true, message: "New code sent!" };
+};
+
+export const verifyNewLoggedInUser = async (id: string) => {
+  return await prisma.user.update({
+    where: { id },
+    data: { isVerified: true },
+  });
 };

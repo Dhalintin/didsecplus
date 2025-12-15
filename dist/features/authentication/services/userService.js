@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.resendVerificationCode = exports.verifyUser = exports.createUserByAdmin = void 0;
+exports.verifyNewLoggedInUser = exports.resendVerificationCode = exports.verifyUser = exports.createUserByAdmin = void 0;
 const emailService_1 = require("../../../utils/emailService");
 const generateOTP_1 = require("../../../utils/generateOTP");
 const { PrismaClient } = require("@prisma/client");
@@ -96,7 +96,7 @@ const createUserByAdmin = (data) => __awaiter(void 0, void 0, void 0, function* 
         subject: "Admin User account creation",
         html,
     };
-    (0, emailService_1.sendVerificationEmail)(mailData).catch((err) => {
+    yield (0, emailService_1.sendVerificationEmail)(mailData).catch((err) => {
         console.error("Failed to send verification email:", err);
     });
     return user;
@@ -182,3 +182,10 @@ const resendVerificationCode = (user) => __awaiter(void 0, void 0, void 0, funct
     return { success: true, message: "New code sent!" };
 });
 exports.resendVerificationCode = resendVerificationCode;
+const verifyNewLoggedInUser = (id) => __awaiter(void 0, void 0, void 0, function* () {
+    return yield prisma.user.update({
+        where: { id },
+        data: { isVerified: true },
+    });
+});
+exports.verifyNewLoggedInUser = verifyNewLoggedInUser;

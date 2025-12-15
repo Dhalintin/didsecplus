@@ -138,7 +138,7 @@ AuthService.verifyUser = (email, code, verification_type) => __awaiter(void 0, v
         where: {
             user: { email },
             code,
-            // type: verification_type || "EMAIL_VERIFICATION",
+            type: verification_type || "EMAIL_VERIFICATION",
             used: false,
             expiresAt: { gt: new Date() },
         },

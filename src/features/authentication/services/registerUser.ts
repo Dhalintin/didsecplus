@@ -154,7 +154,7 @@ export class AuthService {
       where: {
         user: { email },
         code,
-        // type: verification_type || "EMAIL_VERIFICATION",
+        type: verification_type || "EMAIL_VERIFICATION",
         used: false,
         expiresAt: { gt: new Date() },
       },

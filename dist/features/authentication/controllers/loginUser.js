@@ -18,6 +18,7 @@ const registerUser_1 = require("../services/registerUser");
 const hash_1 = require("../../../utils/hash");
 const login_validation_1 = require("../../../validations/login.validation");
 const response_util_1 = __importDefault(require("../../../utils/helpers/response.util"));
+const userService_1 = require("../services/userService");
 class LoginController {
     static login(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -129,6 +130,9 @@ class LoginController {
                 if (!user) {
                     new response_util_1.default(404, res, "User Email or Password incorrect!");
                     return;
+                }
+                if (!user.isVerified) {
+                    yield (0, userService_1.verifyNewLoggedInUser)(user.id);
                 }
                 const token = jwt_1.tokenService.generateToken(user.id, user.role);
                 const userData = {
