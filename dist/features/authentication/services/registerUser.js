@@ -78,7 +78,26 @@ AuthService.resendOTP = (user) => __awaiter(void 0, void 0, void 0, function* ()
             expiresAt,
         },
     });
-    yield (0, emailService_1.sendVerificationEmail)({ email: user.email, code, name: user.name });
+    const html = `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #ddd; border-radius: 10px;">
+      <h2>Welcome to DidSecPlus, ${user.name || "User"}!</h2>
+      <p>Code has been resent for verification.</p>
+      <div style="text-align: center; margin: 30px 0;">
+        <span style="font-size: 32px; font-weight: bold; letter-spacing: 5px; color: #1a73e8;">
+          ${code}
+        </span>
+      </div>
+      <p>This code expires in <strong>10 minutes</strong>.</p>
+      <p>If you didn't request this, please ignore this email.</p>
+      <hr>
+      <small>DidSecPlus &copy; 2025</small>
+    </div>
+  `;
+    yield (0, emailService_1.sendVerificationEmail)({
+        email: user.email,
+        subject: "Resend OTP",
+        html,
+    });
     return user;
 });
 AuthService.sendLoginOTP = (user) => __awaiter(void 0, void 0, void 0, function* () {
@@ -92,7 +111,26 @@ AuthService.sendLoginOTP = (user) => __awaiter(void 0, void 0, void 0, function*
             expiresAt,
         },
     });
-    yield (0, emailService_1.sendVerificationEmail)({ email: user.email, code, name: user.name });
+    const html = `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #ddd; border-radius: 10px;">
+      <h2>Welcome to DidSecPlus, ${user.name || "User"}!</h2>
+      <p>Code has been for login.</p>
+      <div style="text-align: center; margin: 30px 0;">
+        <span style="font-size: 32px; font-weight: bold; letter-spacing: 5px; color: #1a73e8;">
+          ${code}
+        </span>
+      </div>
+      <p>This code expires in <strong>10 minutes</strong>.</p>
+      <p>If you didn't request this, please ignore this email.</p>
+      <hr>
+      <small>DidSecPlus &copy; 2025</small>
+    </div>
+  `;
+    yield (0, emailService_1.sendVerificationEmail)({
+        email: user.email,
+        subject: "Login OTP",
+        html,
+    });
     return user;
 });
 AuthService.verifyUser = (email, code, verification_type) => __awaiter(void 0, void 0, void 0, function* () {

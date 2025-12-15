@@ -95,7 +95,11 @@ export const createUserByAdmin = async (data: adminUser) => {
     </div>
   `;
 
-  const mailData = { email: user.email, code, name: user.name, html };
+  const mailData = {
+    email: user.email,
+    subject: "Admin User account creation",
+    html,
+  };
 
   sendVerificationEmail(mailData).catch((err) => {
     console.error("Failed to send verification email:", err);
@@ -117,8 +121,28 @@ export const verifyUser = async (user: any) => {
     },
   });
 
+  const html = `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #ddd; border-radius: 10px;">
+      <h2>Welcome to DidSecPlus, ${user.name || "User"}!</h2>
+      <p>Code has been sent to you for verification.</p>
+      <div style="text-align: center; margin: 30px 0;">
+        <span style="font-size: 32px; font-weight: bold; letter-spacing: 5px; color: #1a73e8;">
+          ${code}
+        </span>
+      </div>
+      <p>This code expires in <strong>10 minutes</strong>.</p>
+      <p>If you didn't request this, please ignore this email.</p>
+      <hr>
+      <small>DidSecPlus &copy; 2025</small>
+    </div>
+  `;
+
   // Send email
-  await sendVerificationEmail({ email: user.email, code, name: user.name });
+  await sendVerificationEmail({
+    email: user.email,
+    subject: "Verifying user",
+    html,
+  });
 
   return true;
 };
@@ -163,8 +187,6 @@ export const resendVerificationCode = async (user: any) => {
 
   await sendVerificationEmail({
     email: user.email,
-    code,
-    name: user.name,
     html,
     subject: "Resent: Verify your email for DidSecPlus",
   }).catch((err) => {

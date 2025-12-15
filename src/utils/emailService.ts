@@ -163,61 +163,103 @@
 // //     html: "<p>Congrats on sending your <strong>first email</strong>!</p>",
 // //   });
 // // };
-
-import nodemailer from "nodemailer";
+import { Resend } from "resend";
 import dotenv from "dotenv";
 dotenv.config();
 
-export const sendVerificationEmail = async (data: any) => {
-  try {
-    const transport = nodemailer.createTransport({
-      host: "smtp.gmail.com",
-      port: 465,
-      secure: true,
-      auth: {
-        user: process.env.NODE_MAILER_USER,
-        pass: process.env.NODE_MAILER_PASS,
-      },
-    });
+const resend = new Resend(process.env.RESEND_API_KEY);
 
-    const mailOptions = {
-      from: `Didsecplus <${process.env.NODE_MAILER_USER}>`,
-      to: data.email,
+export const sendVerificationEmail = async (data: {
+  email: string;
+  subject: string;
+  html: string;
+}) => {
+  try {
+    await resend.emails.send({
+      from: "Didsecplus <onboarding@resend.dev>", // Default sender (or verify your domain later)
+      to: [data.email],
       subject: data.subject,
       html: data.html,
-    };
-
-    const info = await transport.sendMail(mailOptions);
-    console.log(`Message sent: ${info.messageId}`);
+    });
+    console.log("Verification email sent successfully");
   } catch (error) {
-    console.error("Error sending email:", error);
-    throw new Error("Error sending email");
+    console.error("Error sending verification email:", error);
+    throw new Error("Failed to send email");
   }
 };
 
-export const sendEmail = async (data: any) => {
+export const sendEmail = async (data: {
+  email: string;
+  subject: string;
+  html: string;
+}) => {
   try {
-    const transport = nodemailer.createTransport({
-      host: "smtp.gmail.com",
-      port: 465,
-      secure: true,
-      auth: {
-        user: process.env.NODE_MAILER_USER,
-        pass: process.env.NODE_MAILER_PASS,
-      },
-    });
-
-    const mailOptions = {
-      from: `Didsecplus <${process.env.NODE_MAILER_USER}>`,
-      to: data.email,
+    await resend.emails.send({
+      from: "Didsecplus <onboarding@resend.dev>",
+      to: [data.email],
       subject: data.subject,
       html: data.html,
-    };
-
-    const info = await transport.sendMail(mailOptions);
-    console.log(`Message sent: ${info.messageId}`);
+    });
+    console.log("Email sent successfully");
   } catch (error) {
     console.error("Error sending email:", error);
-    throw new Error("Error sending email");
+    throw new Error("Failed to send email");
   }
 };
+// import nodemailer from "nodemailer";
+// import dotenv from "dotenv";
+// dotenv.config();
+
+// export const sendVerificationEmail = async (data: any) => {
+//   try {
+//     const transport = nodemailer.createTransport({
+//       host: "smtp.gmail.com",
+//       port: 465,
+//       secure: true,
+//       auth: {
+//         user: process.env.NODE_MAILER_USER,
+//         pass: process.env.NODE_MAILER_PASS,
+//       },
+//     });
+
+//     const mailOptions = {
+//       from: `Didsecplus <${process.env.NODE_MAILER_USER}>`,
+//       to: data.email,
+//       subject: data.subject,
+//       html: data.html,
+//     };
+
+//     const info = await transport.sendMail(mailOptions);
+//     console.log(`Message sent: ${info.messageId}`);
+//   } catch (error) {
+//     console.error("Error sending email:", error);
+//     throw new Error("Error sending email");
+//   }
+// };
+
+// export const sendEmail = async (data: any) => {
+//   try {
+//     const transport = nodemailer.createTransport({
+//       host: "smtp.gmail.com",
+//       port: 465,
+//       secure: true,
+//       auth: {
+//         user: process.env.NODE_MAILER_USER,
+//         pass: process.env.NODE_MAILER_PASS,
+//       },
+//     });
+
+//     const mailOptions = {
+//       from: `Didsecplus <${process.env.NODE_MAILER_USER}>`,
+//       to: data.email,
+//       subject: data.subject,
+//       html: data.html,
+//     };
+
+//     const info = await transport.sendMail(mailOptions);
+//     console.log(`Message sent: ${info.messageId}`);
+//   } catch (error) {
+//     console.error("Error sending email:", error);
+//     throw new Error("Error sending email");
+//   }
+// };
