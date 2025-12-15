@@ -1,47 +1,34 @@
-"use strict";
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
+import nodemailer from "nodemailer";
+import dotenv from "dotenv";
+dotenv.config();
+
+export const sendEmail = async (data: any) => {
+  try {
+    const transport = nodemailer.createTransport({
+      host: "smtp.gmail.com",
+      port: 465,
+      secure: true,
+      auth: {
+        user: process.env.NODE_MAILER_USER,
+        pass: process.env.NODE_MAILER_PASS,
+      },
     });
+
+    const mailOptions = {
+      from: `Didsecplus <${process.env.NODE_MAILER_USER}>`,
+      to: data.email,
+      subject: data.subject,
+      html: data.html,
+    };
+
+    const info = await transport.sendMail(mailOptions);
+    console.log(`Message sent: ${info.messageId}`);
+  } catch (error) {
+    console.error("Error sending email:", error);
+    throw new Error("Error sending email");
+  }
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.sendEmail = void 0;
-const nodemailer_1 = __importDefault(require("nodemailer"));
-const dotenv_1 = __importDefault(require("dotenv"));
-dotenv_1.default.config();
-const sendEmail = (data) => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        const transport = nodemailer_1.default.createTransport({
-            host: "smtp.gmail.com",
-            port: 465,
-            secure: true,
-            auth: {
-                user: process.env.NODE_MAILER_USER,
-                pass: process.env.NODE_MAILER_PASS,
-            },
-        });
-        const mailOptions = {
-            from: `Didsecplus <${process.env.NODE_MAILER_USER}>`,
-            to: data.email,
-            subject: data.subject,
-            html: data.html,
-        };
-        const info = yield transport.sendMail(mailOptions);
-        console.log(`Message sent: ${info.messageId}`);
-    }
-    catch (error) {
-        console.error("Error sending email:", error);
-        throw new Error("Error sending email");
-    }
-});
-exports.sendEmail = sendEmail;
+
 // export const hiringTeamMailOptionSendEmail = async (email: string, companyName: string, isExistingUser: boolean) => {
 //   const mailOptions = {
 //     from: process.env.SMTP_EMAIL,
@@ -56,7 +43,9 @@ exports.sendEmail = sendEmail;
 //             <meta http-equiv="X-UA-Compatible" content="IE=edge">
 //             <meta name="x-apple-disable-message-reformatting">
 //             <title></title>
+
 //             <link href="https://fonts.googleapis.com/css?family=Lato:300,400,700" rel="stylesheet">
+
 //             <!-- CSS Reset : BEGIN -->
 //             <style>
 //                 html,
@@ -69,6 +58,7 @@ exports.sendEmail = sendEmail;
 //         }
 //         /* [Rest of the CSS Reset styles omitted for brevity, assume they remain the same] */
 //             </style>
+
 //             <!-- Progressive Enhancements : BEGIN -->
 //             <style>
 //                 .primary{ background: #4CAF50; } /* Changed to a green shade for inclusivity */
@@ -77,12 +67,14 @@ exports.sendEmail = sendEmail;
 //                 .bg_black{ background: #000000; }
 //                 .bg_dark{ background: rgba(0,0,0,.8); }
 //                 .email-section{ padding:2.5em; }
+
 //                 /*BUTTON*/
 //                 .btn{ padding: 10px 15px; display: inline-block; }
 //                 .btn.btn-primary{ border-radius: 5px; background: #4CAF50; color: #ffffff; }
 //                 .btn.btn-white{ border-radius: 5px; background: #ffffff; color: #000000; }
 //                 .btn.btn-white-outline{ border-radius: 5px; background: transparent; border: 1px solid #fff; color: #fff; }
 //                 .btn.btn-black-outline{ border-radius: 0px; background: transparent; border: 2px solid #000; color: #000; font-weight: 700; }
+
 //                 h1,h2,h3,h4,h5,h6{ font-family: 'Lato', sans-serif; color: #000000; margin-top: 0; font-weight: 400; }
 //                 body{ font-family: 'Lato', sans-serif; font-weight: 400; font-size: 15px; line-height: 1.8; color: rgba(0,0,0,.4); }
 //                 a{ color: #4CAF50; }
@@ -110,6 +102,7 @@ exports.sendEmail = sendEmail;
 //                 .footer ul li a{ color: rgba(0,0,0,1); }
 //             </style>
 //         </head>
+
 //         <body width="100%" style="margin: 0; padding: 0 !important; mso-line-height-rule: exactly; background-color: #f1f1f1;">
 //             <center style="width: 100%; background-color: #f1f1f1;">
 //             <div style="display: none; font-size: 1px;max-height: 0px; max-width: 0px; opacity: 0; overflow: hidden; mso-hide: all; font-family: sans-serif;">
@@ -151,5 +144,6 @@ exports.sendEmail = sendEmail;
 //         </html>
 //     `,
 //   };
+
 //   return mailOptions;
 // };
