@@ -76,7 +76,23 @@ const createUserByAdmin = (data) => __awaiter(void 0, void 0, void 0, function* 
             expiresAt,
         },
     });
-    (0, emailService_1.sendVerificationEmail)(user.email, code, user.name || undefined).catch((err) => {
+    const html = `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #ddd; border-radius: 10px;">
+      <h2>Welcome to DidSecPlus, ${data.name || "User"}!</h2>
+      <p>Your account has been created. Please verify your email to activate your account.</p>
+      <div style="text-align: center; margin: 30px 0;">
+        <span style="font-size: 32px; font-weight: bold; letter-spacing: 5px; color: #1a73e8;">
+          ${code}
+        </span>
+      </div>
+      <p>This code expires in <strong>10 minutes</strong>.</p>
+      <p>If you didn't request this, please ignore this email.</p>
+      <hr>
+      <small>DidSecPlus &copy; 2025</small>
+    </div>
+  `;
+    const mailData = { email: user.email, code, name: user.name, html };
+    (0, emailService_1.sendVerificationEmail)(mailData).catch((err) => {
         console.error("Failed to send verification email:", err);
     });
     return user;
@@ -94,7 +110,7 @@ const verifyUser = (user) => __awaiter(void 0, void 0, void 0, function* () {
         },
     });
     // Send email
-    yield (0, emailService_1.sendVerificationEmail)(user.email, code, user.name || undefined);
+    yield (0, emailService_1.sendVerificationEmail)({ email: user.email, code, name: user.name });
     return true;
 });
 exports.verifyUser = verifyUser;
@@ -118,7 +134,28 @@ const resendVerificationCode = (user) => __awaiter(void 0, void 0, void 0, funct
             expiresAt,
         },
     });
-    (0, emailService_1.sendVerificationEmail)(user.email, code, user.name || undefined).catch((err) => {
+    const html = `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #ddd; border-radius: 10px;">
+      <h2>Welcome to DidSecPlus, ${user.name || "User"}!</h2>
+      <p>Code has been resent for verification.</p>
+      <div style="text-align: center; margin: 30px 0;">
+        <span style="font-size: 32px; font-weight: bold; letter-spacing: 5px; color: #1a73e8;">
+          ${code}
+        </span>
+      </div>
+      <p>This code expires in <strong>10 minutes</strong>.</p>
+      <p>If you didn't request this, please ignore this email.</p>
+      <hr>
+      <small>DidSecPlus &copy; 2025</small>
+    </div>
+  `;
+    yield (0, emailService_1.sendVerificationEmail)({
+        email: user.email,
+        code,
+        name: user.name,
+        html,
+        subject: "Resent: Verify your email for DidSecPlus",
+    }).catch((err) => {
         console.error("Failed to send verification email:", err);
     });
     return { success: true, message: "New code sent!" };

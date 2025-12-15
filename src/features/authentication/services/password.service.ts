@@ -85,9 +85,9 @@ export class PasswordService {
     const emailTemplate = `<p>Click <a href="${resetLink}">here</a> to reset your password.</p>`;
 
     await sendEmail({
-      to: user.email,
+      email: user.email,
       subject: "Reset Your Password",
-      code: emailTemplate,
+      html: emailTemplate,
       name: user.name,
     });
 

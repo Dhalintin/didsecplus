@@ -41,9 +41,9 @@ class PasswordService {
             const resetLink = `${process.env.FRONTEND_BASE_URL}/reset-password?token=${resetToken}`;
             const emailTemplate = `<p>Click <a href="${resetLink}">here</a> to reset your password.</p>`;
             yield (0, emailService_1.sendEmail)({
-                to: user.email,
+                email: user.email,
                 subject: "Reset Your Password",
-                code: emailTemplate,
+                html: emailTemplate,
                 name: user.name,
             });
             return { message: "Password reset link sent to your email" };

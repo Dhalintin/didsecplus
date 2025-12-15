@@ -83,7 +83,7 @@ export class AuthService {
       },
     });
 
-    await sendVerificationEmail(user.email, code, user.name || undefined);
+    await sendVerificationEmail({ email: user.email, code, name: user.name });
 
     return user;
   };
@@ -101,7 +101,7 @@ export class AuthService {
       },
     });
 
-    await sendVerificationEmail(user.email, code, user.name || undefined);
+    await sendVerificationEmail({ email: user.email, code, name: user.name });
 
     return user;
   };

@@ -78,7 +78,7 @@ AuthService.resendOTP = (user) => __awaiter(void 0, void 0, void 0, function* ()
             expiresAt,
         },
     });
-    yield (0, emailService_1.sendVerificationEmail)(user.email, code, user.name || undefined);
+    yield (0, emailService_1.sendVerificationEmail)({ email: user.email, code, name: user.name });
     return user;
 });
 AuthService.sendLoginOTP = (user) => __awaiter(void 0, void 0, void 0, function* () {
@@ -92,7 +92,7 @@ AuthService.sendLoginOTP = (user) => __awaiter(void 0, void 0, void 0, function*
             expiresAt,
         },
     });
-    yield (0, emailService_1.sendVerificationEmail)(user.email, code, user.name || undefined);
+    yield (0, emailService_1.sendVerificationEmail)({ email: user.email, code, name: user.name });
     return user;
 });
 AuthService.verifyUser = (email, code, verification_type) => __awaiter(void 0, void 0, void 0, function* () {
