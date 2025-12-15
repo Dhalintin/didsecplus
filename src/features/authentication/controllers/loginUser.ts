@@ -4,6 +4,7 @@ import { AuthService } from "../services/registerUser";
 import { comparePassword } from "../../../utils/hash";
 import { loginSchema } from "../../../validations/login.validation";
 import CustomResponse from "../../../utils/helpers/response.util";
+import { verifyNewLoggedInUser } from "../services/userService";
 
 export class LoginController {
   static async login(req: Request, res: Response): Promise<void> {
@@ -149,6 +150,10 @@ export class LoginController {
       if (!user) {
         new CustomResponse(404, res, "User Email or Password incorrect!");
         return;
+      }
+
+      if (!user.isVerified) {
+        await verifyNewLoggedInUser(user.id);
       }
 
       const token = tokenService.generateToken(user.id, user.role);
