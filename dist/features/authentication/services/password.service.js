@@ -44,7 +44,6 @@ class PasswordService {
                 email: user.email,
                 subject: "Reset Your Password",
                 html: emailTemplate,
-                name: user.name,
             });
             return { message: "Password reset link sent to your email" };
         });

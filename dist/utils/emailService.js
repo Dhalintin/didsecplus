@@ -163,58 +163,90 @@ exports.sendEmail = exports.sendVerificationEmail = void 0;
 // //     html: "<p>Congrats on sending your <strong>first email</strong>!</p>",
 // //   });
 // // };
-const nodemailer_1 = __importDefault(require("nodemailer"));
+const resend_1 = require("resend");
 const dotenv_1 = __importDefault(require("dotenv"));
 dotenv_1.default.config();
+const resend = new resend_1.Resend(process.env.RESEND_API_KEY);
 const sendVerificationEmail = (data) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const transport = nodemailer_1.default.createTransport({
-            host: "smtp.gmail.com",
-            port: 465,
-            secure: true,
-            auth: {
-                user: process.env.NODE_MAILER_USER,
-                pass: process.env.NODE_MAILER_PASS,
-            },
-        });
-        const mailOptions = {
-            from: `Didsecplus <${process.env.NODE_MAILER_USER}>`,
-            to: data.email,
+        yield resend.emails.send({
+            from: "Didsecplus <onboarding@resend.dev>", // Default sender (or verify your domain later)
+            to: [data.email],
             subject: data.subject,
             html: data.html,
-        };
-        const info = yield transport.sendMail(mailOptions);
-        console.log(`Message sent: ${info.messageId}`);
+        });
+        console.log("Verification email sent successfully");
     }
     catch (error) {
-        console.error("Error sending email:", error);
-        throw new Error("Error sending email");
+        console.error("Error sending verification email:", error);
+        throw new Error("Failed to send email");
     }
 });
 exports.sendVerificationEmail = sendVerificationEmail;
 const sendEmail = (data) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const transport = nodemailer_1.default.createTransport({
-            host: "smtp.gmail.com",
-            port: 465,
-            secure: true,
-            auth: {
-                user: process.env.NODE_MAILER_USER,
-                pass: process.env.NODE_MAILER_PASS,
-            },
-        });
-        const mailOptions = {
-            from: `Didsecplus <${process.env.NODE_MAILER_USER}>`,
-            to: data.email,
+        yield resend.emails.send({
+            from: "Didsecplus <onboarding@resend.dev>",
+            to: [data.email],
             subject: data.subject,
             html: data.html,
-        };
-        const info = yield transport.sendMail(mailOptions);
-        console.log(`Message sent: ${info.messageId}`);
+        });
+        console.log("Email sent successfully");
     }
     catch (error) {
         console.error("Error sending email:", error);
-        throw new Error("Error sending email");
+        throw new Error("Failed to send email");
     }
 });
 exports.sendEmail = sendEmail;
+// import nodemailer from "nodemailer";
+// import dotenv from "dotenv";
+// dotenv.config();
+// export const sendVerificationEmail = async (data: any) => {
+//   try {
+//     const transport = nodemailer.createTransport({
+//       host: "smtp.gmail.com",
+//       port: 465,
+//       secure: true,
+//       auth: {
+//         user: process.env.NODE_MAILER_USER,
+//         pass: process.env.NODE_MAILER_PASS,
+//       },
+//     });
+//     const mailOptions = {
+//       from: `Didsecplus <${process.env.NODE_MAILER_USER}>`,
+//       to: data.email,
+//       subject: data.subject,
+//       html: data.html,
+//     };
+//     const info = await transport.sendMail(mailOptions);
+//     console.log(`Message sent: ${info.messageId}`);
+//   } catch (error) {
+//     console.error("Error sending email:", error);
+//     throw new Error("Error sending email");
+//   }
+// };
+// export const sendEmail = async (data: any) => {
+//   try {
+//     const transport = nodemailer.createTransport({
+//       host: "smtp.gmail.com",
+//       port: 465,
+//       secure: true,
+//       auth: {
+//         user: process.env.NODE_MAILER_USER,
+//         pass: process.env.NODE_MAILER_PASS,
+//       },
+//     });
+//     const mailOptions = {
+//       from: `Didsecplus <${process.env.NODE_MAILER_USER}>`,
+//       to: data.email,
+//       subject: data.subject,
+//       html: data.html,
+//     };
+//     const info = await transport.sendMail(mailOptions);
+//     console.log(`Message sent: ${info.messageId}`);
+//   } catch (error) {
+//     console.error("Error sending email:", error);
+//     throw new Error("Error sending email");
+//   }
+// };
