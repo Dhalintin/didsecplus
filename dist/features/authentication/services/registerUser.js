@@ -153,9 +153,9 @@ AuthService.verifyUser = (email, code, verification_type) => __awaiter(void 0, v
         data: { used: true },
     });
     // Mark user as verified
-    yield prisma.user.update({
-        where: { id: verification.userId },
-        data: { isVerified: true },
-    });
+    // await prisma.user.update({
+    //   where: { id: verification.userId },
+    //   data: { isVerified: true },
+    // });
     return true;
 });
