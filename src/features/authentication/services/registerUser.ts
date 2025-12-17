@@ -172,10 +172,10 @@ export class AuthService {
     });
 
     // Mark user as verified
-    await prisma.user.update({
-      where: { id: verification.userId },
-      data: { isVerified: true },
-    });
+    // await prisma.user.update({
+    //   where: { id: verification.userId },
+    //   data: { isVerified: true },
+    // });
 
     return true;
   };

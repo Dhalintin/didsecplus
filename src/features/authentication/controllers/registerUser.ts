@@ -1,5 +1,4 @@
 import { Request, Response } from "express";
-import { tokenService } from "../../../utils/jwt";
 import { AuthService } from "../services/registerUser";
 import { hashPassword } from "../../../utils/hash";
 import userSchema from "../../../validations/register.validation";
