@@ -5,22 +5,25 @@ info:
     Complete API documentation for the Didsecplus frontend team.
 
     **Important for Frontend Developers**
+
     • Almost every endpoint requires a valid JWT token
+
     • Send it as header: `Authorization /:/ Bearer <your-jwt-token>`
+
     • Get the token from **POST /auth/login**
+
     • Store it in localStorage or secure cookie
+
     • Public endpoints (no token needed): `/auth/register`, `/auth/login`, `/health`, `/reports/incidents`
   version: 1.0.0
   contact:
     name: Didsecplus Dev Team
-    email: devs@didsecplus.com
-
+    email: didsecplus@gmail.com
 servers:
-  - url: http://localhost:443/api/v1
-    description: Local development
-  - url: https://api.didsecplus.com/api/v1
-    description: Production
-
+#   - url: http://localhost:443/api/v1
+#     description: Local development
+#   - url: https://api.didsecplus.com/api/v1
+#     description: Production
 components:
   securitySchemes:
     bearerAuth:
@@ -273,6 +276,152 @@ paths:
           description: User not found
         "500":
           description: Server error
+
+  /auth/forgot-password:
+    post:
+      summary: Request Password Reset Code
+      description: |
+        Sends a 6-digit password reset code to the user's registered email.
+        - Rate limited: Only one request allowed every 2 minutes per user.
+        - The code expires in 10 minutes.
+        - Requires authentication (your existing authMiddleware).
+      tags: [Authentication]
+      security:
+        - bearerAuth: [] # Adjust if your authMiddleware uses a different scheme
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: "user@example.com"
+                  description: The email address associated with the account.
+              example:
+                email: "user@example.com"
+      responses:
+        "200":
+          description: Password reset code sent successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  resp:
+                    type: object
+                    properties:
+                      success:
+                        type: boolean
+                        example: true
+                      message:
+                        type: string
+                        example: "New code sent!"
+        "400":
+          description: Bad request (missing email)
+        "404":
+          description: User not found (returns generic message to prevent enumeration)
+        "429":
+          description: Too many requests (wait 2 minutes)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: "Please wait 2 minutes before requesting again"
+        "500":
+          description: Server error (e.g., email sending failed)
+
+  /auth/reset-password:
+    post:
+      summary: Reset Password with Code
+      description: |
+        Changes the user's password using the 6-digit code sent via email.
+        - The code must be valid and not expired.
+        - New password must be at least 8 characters.
+        - Requires authentication (your existing authMiddleware).
+      tags: [Authentication]
+      security:
+        - bearerAuth: [] # Adjust if needed
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - code
+                - newPassword
+                - confirmPassword
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: "user@example.com"
+                code:
+                  type: string
+                  example: "483920"
+                  description: The 6-digit code received via email
+                newPassword:
+                  type: string
+                  format: password
+                  minLength: 8
+                  example: "MyNewSecurePass123"
+                confirmPassword:
+                  type: string
+                  format: password
+                  minLength: 8
+                  example: "MyNewSecurePass123"
+              example:
+                email: "user@example.com"
+                code: "483920"
+                newPassword: "MyNewSecurePass123"
+                confirmPassword: "MyNewSecurePass123"
+      responses:
+        "200":
+          description: Password reset successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "Password changed successfully"
+        "400":
+          description: Validation error (invalid email, missing fields, passwords don't match, weak password)
+        "404":
+          description: User not found
+        "410":
+          description: Code expired or invalid
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                    example: "Invalid or expired code"
+        "500":
+          description: Internal server error
 
   /health:
     get:
