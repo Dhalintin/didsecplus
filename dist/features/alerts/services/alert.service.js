@@ -57,7 +57,6 @@ class AlertService {
                 }
             }
             if (data.recipients.length > 0) {
-                console.log("True");
                 responseAlert = yield prisma.alert.findUnique({
                     where: { id: alert.id },
                     include: {
@@ -66,10 +65,9 @@ class AlertService {
                 });
             }
             else {
-                console.log("False");
                 responseAlert = alert;
             }
-            return alert;
+            return responseAlert;
         });
     }
     getAlerts(data) {

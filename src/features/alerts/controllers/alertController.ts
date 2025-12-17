@@ -7,6 +7,7 @@ import { AuthService } from "../../authentication/services/registerUser";
 import { getLocationDetails } from "../../../utils/getLocation";
 import { socketService } from "../../../server";
 import logger from "../../../middlewares/logger.middleware";
+import { checkAlertLimits } from "../../../utils/alertLimits";
 
 const alertService = new AlertService();
 
@@ -48,6 +49,19 @@ export class AlertController {
         lga,
         recipients: responseData.recipients || [],
       };
+
+      // const limitCheck = await checkAlertLimits(req.user.userId);
+
+      // if (!limitCheck.canCreate) {
+      //   new CustomResponse(429, res, "Alert created successfully", {
+      //     error: limitCheck.reason,
+      //     dailyUsed: limitCheck.dailyCount,
+      //     weeklyUsed: limitCheck.weeklyCount,
+      //     dailyLimit: 2,
+      //     weeklyLimit: 8,
+      //   });
+      //   return;
+      // }
 
       const alert = await alertService.createAlert(req.user.userId, data);
 

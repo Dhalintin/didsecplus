@@ -145,16 +145,12 @@ export class AuthService {
     return user;
   };
 
-  static verifyUser = async (
-    email: string,
-    code: string,
-    verification_type?: string
-  ) => {
+  static verifyUser = async (userId: string, code: string) => {
     const verification = await prisma.verificationCode.findFirst({
       where: {
-        user: { email },
+        userId,
         code,
-        type: verification_type || "EMAIL_VERIFICATION",
+        type: "EMAIL_VERIFICATION",
         used: false,
         expiresAt: { gt: new Date() },
       },
@@ -162,6 +158,7 @@ export class AuthService {
     });
 
     if (!verification) {
+      console.log("No verification found");
       return false;
     }
 
@@ -170,12 +167,6 @@ export class AuthService {
       where: { id: verification.id },
       data: { used: true },
     });
-
-    // Mark user as verified
-    // await prisma.user.update({
-    //   where: { id: verification.userId },
-    //   data: { isVerified: true },
-    // });
 
     return true;
   };

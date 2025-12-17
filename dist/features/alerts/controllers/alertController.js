@@ -48,6 +48,17 @@ class AlertController {
                 }
                 const data = Object.assign(Object.assign({}, responseData), { latitude: Number(responseData.latitude), longitude: Number(responseData.longitude), state,
                     lga, recipients: responseData.recipients || [] });
+                // const limitCheck = await checkAlertLimits(req.user.userId);
+                // if (!limitCheck.canCreate) {
+                //   new CustomResponse(429, res, "Alert created successfully", {
+                //     error: limitCheck.reason,
+                //     dailyUsed: limitCheck.dailyCount,
+                //     weeklyUsed: limitCheck.weeklyCount,
+                //     dailyLimit: 2,
+                //     weeklyLimit: 8,
+                //   });
+                //   return;
+                // }
                 const alert = yield alertService.createAlert(req.user.userId, data);
                 if (server_1.socketService) {
                     server_1.socketService.emitNewAlert(alert, "full");

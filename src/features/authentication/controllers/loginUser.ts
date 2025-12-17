@@ -134,21 +134,17 @@ export class LoginController {
         return;
       }
 
-      const isVerified = await AuthService.verifyUser(
-        email,
-        code,
-        "LOGIN_VERIFICATION"
-      );
-
-      if (!isVerified) {
-        new CustomResponse(404, res, "Invalid code!");
-        return;
-      }
-
       const user = await AuthService.getUserByEmail(email);
 
       if (!user) {
         new CustomResponse(404, res, "User Email or Password incorrect!");
+        return;
+      }
+
+      const isVerified = await AuthService.verifyUser(user.id, code);
+
+      if (!isVerified) {
+        new CustomResponse(404, res, "Invalid code!");
         return;
       }
 

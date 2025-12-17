@@ -8,11 +8,17 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.PasswordController = void 0;
 // import { AuthService } from "../services/authService";
 const hash_1 = require("../../../utils/hash");
 const password_service_1 = require("../services/password.service");
+const appError_1 = require("../../../lib/appError");
+const passwordReset_validation_1 = __importDefault(require("../../../validations/passwordReset.validation"));
+const registerUser_1 = require("../services/registerUser");
 class PasswordController {
     static changePassword(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -49,8 +55,24 @@ class PasswordController {
     static resetPassword(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const { token, newPassword, confirmPassword } = req.body;
-                yield password_service_1.PasswordService.resetPassword(token, newPassword, confirmPassword);
+                const { error } = passwordReset_validation_1.default.validate(req.body);
+                if (error) {
+                    res.status(400).json({ success: false, message: error.message });
+                    return;
+                }
+                const { code, newPassword, confirmPassword, email } = req.body;
+                const user = yield registerUser_1.AuthService.getUserByEmail(email);
+                if (!user) {
+                    throw new appError_1.NotFoundError("User not found");
+                    // res.status(404).json({ success: false, message: "User not found" });
+                    return;
+                }
+                yield password_service_1.PasswordService.resetPassword({
+                    userId: user.id,
+                    code,
+                    newPassword,
+                    confirmPassword,
+                });
                 res
                     .status(200)
                     .json({ success: true, message: "Password changed successfully" });
@@ -69,6 +91,8 @@ class PasswordController {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 const { email } = req.body;
+                if (!email)
+                    throw new appError_1.BadRequestError("Email is required");
                 const resp = yield password_service_1.PasswordService.forgotPassword(email);
                 res.status(200).json({ success: true, resp });
                 return;
