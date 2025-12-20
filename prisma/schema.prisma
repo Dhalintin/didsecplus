@@ -94,6 +94,7 @@ model Alert {
   @@index([userId])
   @@index([status])
   @@index([state])
+  @@index([userId, created_at(sort: Desc)])
 }
 
 model Ticket {

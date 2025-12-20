@@ -121,14 +121,14 @@ class LoginController {
                     new response_util_1.default(400, res, "Email and code required");
                     return;
                 }
-                const isVerified = yield registerUser_1.AuthService.verifyUser(email, code, "LOGIN_VERIFICATION");
-                if (!isVerified) {
-                    new response_util_1.default(404, res, "Invalid code!");
-                    return;
-                }
                 const user = yield registerUser_1.AuthService.getUserByEmail(email);
                 if (!user) {
                     new response_util_1.default(404, res, "User Email or Password incorrect!");
+                    return;
+                }
+                const isVerified = yield registerUser_1.AuthService.verifyUser(user.id, code);
+                if (!isVerified) {
+                    new response_util_1.default(404, res, "Invalid code!");
                     return;
                 }
                 if (!user.isVerified) {

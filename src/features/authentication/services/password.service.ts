@@ -8,8 +8,9 @@ import {
   NotFoundError,
 } from "../../../lib/appError";
 import { hashPassword } from "../../../utils/hash";
-import crypto from "crypto";
-import { sendEmail } from "../../../utils/emailService";
+import { sendEmail, sendVerificationEmail } from "../../../utils/emailService";
+import { generateOTP } from "../../../utils/generateOTP";
+import { addMinutes } from "date-fns";
 
 export class PasswordService {
   static getUserById = async (userId: string) => {
@@ -24,72 +25,102 @@ export class PasswordService {
     });
   };
 
-  static resetPassword = async (
-    token: string,
-    newPassword: string,
-    confirmPassword: string
-  ) => {
-    if (!token || !newPassword || !confirmPassword)
-      throw new BadRequestError("All fields are required");
+  static resetPassword = async (data: {
+    userId: string;
+    code: string;
+    newPassword: string;
+    confirmPassword: string;
+  }) => {
+    const { userId, code, newPassword, confirmPassword } = data;
+
     if (newPassword !== confirmPassword)
       throw new BadRequestError("Passwords do not match");
 
-    const passwordRegex =
-      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-z\d@$!%*?&#]{8,}$/;
-    if (!passwordRegex.test(newPassword)) {
-      throw new BadRequestError(
-        "Password must be at least 8 characters long, with an uppercase letter, a lowercase letter, a number, and a special character."
-      );
-    }
-
-    const user = await prisma.user.findFirst({
-      where: { resetTokenExpires: { gte: new Date() } },
+    const verification = await prisma.verificationCode.findFirst({
+      where: {
+        userId,
+        code,
+        type: "PASSWORD_RESET",
+        used: false,
+        expiresAt: { gt: new Date() },
+      },
+      include: { user: true },
     });
 
-    if (!user || !(await compare(token, user.resetToken!))) {
-      throw new InvalidError("Invalid or expired token");
+    if (!verification) {
+      console.log("No verification found");
+      return false;
     }
 
     const hashedPassword = await hashPassword(newPassword);
 
     await prisma.user.update({
-      where: { id: user.id },
+      where: { id: userId },
       data: {
         password: hashedPassword,
-        resetToken: null,
-        resetTokenExpires: null,
       },
+    });
+
+    await prisma.verificationCode.update({
+      where: { id: verification.id },
+      data: { used: true },
     });
 
     return { message: "Password reset successful" };
   };
 
   static async forgotPassword(email: string) {
-    if (!email) throw new BadRequestError("Email is required");
-
     const user = await prisma.user.findUnique({
       where: { email: email.toLowerCase() },
     });
-    if (!user) throw new NotFoundError("User not found");
 
-    const resetToken = crypto.randomBytes(32).toString("hex");
-    const resetTokenHash = await hashPassword(resetToken);
-    const resetTokenExpires = new Date(Date.now() + 60 * 60 * 1000);
+    if (!user) {
+      throw new NotFoundError("User not found");
+    }
 
-    await prisma.user.update({
-      where: { email },
-      data: { resetToken: resetTokenHash, resetTokenExpires },
+    const recent = await prisma.verificationCode.findFirst({
+      where: {
+        userId: user.id,
+        type: "PASSWORD_RESET",
+        createdAt: { gte: new Date(Date.now() - 2 * 60 * 1000) },
+      },
+    });
+    if (recent)
+      throw new Error("Please wait 2 minutes before requesting again");
+
+    const code = generateOTP();
+    // const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
+    const expiresAt = addMinutes(new Date(), 10);
+
+    await prisma.verificationCode.create({
+      data: {
+        userId: user.id,
+        code,
+        type: "PASSWORD_RESET",
+        expiresAt,
+      },
     });
 
-    const resetLink = `${process.env.FRONTEND_BASE_URL}/reset-password?token=${resetToken}`;
-    const emailTemplate = `<p>Click <a href="${resetLink}">here</a> to reset your password.</p>`;
+    const emailTemplate = `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #ddd; border-radius: 10px; text-align: center;">
+      <h2>Password Reset Code</h2>
+      <p>Use this code to reset your password in the app:</p>
+      <div style="font-size: 32px; font-weight: bold; letter-spacing: 5px; color: #1a73e8; margin: 20px 0;">
+        ${code}
+      </div>
+      <p><strong>Expires in 15 minutes.</strong></p>
+      <p>If you didn't request this, ignore this email.</p>
+    </div>
+  `;
 
-    await sendEmail({
+    await sendVerificationEmail({
       email: user.email,
-      subject: "Reset Your Password",
       html: emailTemplate,
+      subject: "Your Password Reset Code",
+    }).catch((err: any) => {
+      console.error("Failed to send verification email:", err);
     });
 
-    return { message: "Password reset link sent to your email" };
+    return { success: true, message: "New code sent!" };
   }
 }

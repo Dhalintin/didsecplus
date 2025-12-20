@@ -3,6 +3,9 @@ import { Request, Response } from "express";
 
 import { comparePassword } from "../../../utils/hash";
 import { PasswordService } from "../services/password.service";
+import { BadRequestError, NotFoundError } from "../../../lib/appError";
+import passwordResetSchema from "../../../validations/passwordReset.validation";
+import { AuthService } from "../services/registerUser";
 
 export class PasswordController {
   static async changePassword(req: Request, res: Response): Promise<void> {
@@ -41,8 +44,27 @@ export class PasswordController {
 
   static async resetPassword(req: Request, res: Response) {
     try {
-      const { token, newPassword, confirmPassword } = req.body;
-      await PasswordService.resetPassword(token, newPassword, confirmPassword);
+      const { error } = passwordResetSchema.validate(req.body);
+      if (error) {
+        res.status(400).json({ success: false, message: error.message });
+        return;
+      }
+
+      const { code, newPassword, confirmPassword, email } = req.body;
+      const user = await AuthService.getUserByEmail(email);
+
+      if (!user) {
+        throw new NotFoundError("User not found");
+        // res.status(404).json({ success: false, message: "User not found" });
+        return;
+      }
+
+      await PasswordService.resetPassword({
+        userId: user.id,
+        code,
+        newPassword,
+        confirmPassword,
+      });
       res
         .status(200)
         .json({ success: true, message: "Password changed successfully" });
@@ -60,6 +82,8 @@ export class PasswordController {
   static async forgotPassword(req: Request, res: Response) {
     try {
       const { email } = req.body;
+      if (!email) throw new BadRequestError("Email is required");
+
       const resp = await PasswordService.forgotPassword(email);
 
       res.status(200).json({ success: true, resp });

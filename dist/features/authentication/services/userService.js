@@ -12,6 +12,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.verifyNewLoggedInUser = exports.resendVerificationCode = exports.verifyUser = exports.createUserByAdmin = void 0;
 const emailService_1 = require("../../../utils/emailService");
 const generateOTP_1 = require("../../../utils/generateOTP");
+const date_fns_1 = require("date-fns");
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 // import bcrypt from "bcryptjs";
@@ -67,7 +68,12 @@ const createUserByAdmin = (data) => __awaiter(void 0, void 0, void 0, function* 
     });
     // Generate OTP
     const code = (0, generateOTP_1.generateOTP)();
-    const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
+    // const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
+    // expiresAt.setUTCHours(expiresAt.getUTCHours());
+    // expiresAt.setUTCMinutes(expiresAt.getUTCMinutes());
+    // expiresAt.setUTCSeconds(expiresAt.getUTCSeconds());
+    // expiresAt.setUTCMilliseconds(0);
+    const expiresAt = (0, date_fns_1.addMinutes)(new Date(), 10);
     yield prisma.verificationCode.create({
         data: {
             userId: user.id,

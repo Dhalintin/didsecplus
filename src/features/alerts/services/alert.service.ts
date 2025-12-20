@@ -81,7 +81,6 @@ export class AlertService {
     }
 
     if (data.recipients.length > 0) {
-      console.log("True");
       responseAlert = await prisma.alert.findUnique({
         where: { id: alert.id },
         include: {
@@ -89,10 +88,9 @@ export class AlertService {
         },
       });
     } else {
-      console.log("False");
       responseAlert = alert;
     }
-    return alert;
+    return responseAlert;
   }
 
   async getAlerts(data: GetAlertDTO) {

@@ -8,44 +8,64 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 var _a;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.PasswordService = void 0;
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
-const bcryptjs_1 = require("bcryptjs");
 const appError_1 = require("../../../lib/appError");
 const hash_1 = require("../../../utils/hash");
-const crypto_1 = __importDefault(require("crypto"));
 const emailService_1 = require("../../../utils/emailService");
+const generateOTP_1 = require("../../../utils/generateOTP");
+const date_fns_1 = require("date-fns");
 class PasswordService {
     static forgotPassword(email) {
         return __awaiter(this, void 0, void 0, function* () {
-            if (!email)
-                throw new appError_1.BadRequestError("Email is required");
             const user = yield prisma.user.findUnique({
                 where: { email: email.toLowerCase() },
             });
-            if (!user)
+            if (!user) {
                 throw new appError_1.NotFoundError("User not found");
-            const resetToken = crypto_1.default.randomBytes(32).toString("hex");
-            const resetTokenHash = yield (0, hash_1.hashPassword)(resetToken);
-            const resetTokenExpires = new Date(Date.now() + 60 * 60 * 1000);
-            yield prisma.user.update({
-                where: { email },
-                data: { resetToken: resetTokenHash, resetTokenExpires },
+            }
+            const recent = yield prisma.verificationCode.findFirst({
+                where: {
+                    userId: user.id,
+                    type: "PASSWORD_RESET",
+                    createdAt: { gte: new Date(Date.now() - 2 * 60 * 1000) },
+                },
             });
-            const resetLink = `${process.env.FRONTEND_BASE_URL}/reset-password?token=${resetToken}`;
-            const emailTemplate = `<p>Click <a href="${resetLink}">here</a> to reset your password.</p>`;
-            yield (0, emailService_1.sendEmail)({
+            if (recent)
+                throw new Error("Please wait 2 minutes before requesting again");
+            const code = (0, generateOTP_1.generateOTP)();
+            // const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
+            const expiresAt = (0, date_fns_1.addMinutes)(new Date(), 10);
+            yield prisma.verificationCode.create({
+                data: {
+                    userId: user.id,
+                    code,
+                    type: "PASSWORD_RESET",
+                    expiresAt,
+                },
+            });
+            const emailTemplate = `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #ddd; border-radius: 10px; text-align: center;">
+      <h2>Password Reset Code</h2>
+      <p>Use this code to reset your password in the app:</p>
+      <div style="font-size: 32px; font-weight: bold; letter-spacing: 5px; color: #1a73e8; margin: 20px 0;">
+        ${code}
+      </div>
+      <p><strong>Expires in 15 minutes.</strong></p>
+      <p>If you didn't request this, ignore this email.</p>
+    </div>
+  `;
+            yield (0, emailService_1.sendVerificationEmail)({
                 email: user.email,
-                subject: "Reset Your Password",
                 html: emailTemplate,
+                subject: "Your Password Reset Code",
+            }).catch((err) => {
+                console.error("Failed to send verification email:", err);
             });
-            return { message: "Password reset link sent to your email" };
+            return { success: true, message: "New code sent!" };
         });
     }
 }
@@ -61,29 +81,34 @@ PasswordService.updatePassword = (userId, newPassword) => __awaiter(void 0, void
         data: { password: hashed },
     });
 });
-PasswordService.resetPassword = (token, newPassword, confirmPassword) => __awaiter(void 0, void 0, void 0, function* () {
-    if (!token || !newPassword || !confirmPassword)
-        throw new appError_1.BadRequestError("All fields are required");
+PasswordService.resetPassword = (data) => __awaiter(void 0, void 0, void 0, function* () {
+    const { userId, code, newPassword, confirmPassword } = data;
     if (newPassword !== confirmPassword)
         throw new appError_1.BadRequestError("Passwords do not match");
-    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-z\d@$!%*?&#]{8,}$/;
-    if (!passwordRegex.test(newPassword)) {
-        throw new appError_1.BadRequestError("Password must be at least 8 characters long, with an uppercase letter, a lowercase letter, a number, and a special character.");
-    }
-    const user = yield prisma.user.findFirst({
-        where: { resetTokenExpires: { gte: new Date() } },
+    const verification = yield prisma.verificationCode.findFirst({
+        where: {
+            userId,
+            code,
+            type: "PASSWORD_RESET",
+            used: false,
+            expiresAt: { gt: new Date() },
+        },
+        include: { user: true },
     });
-    if (!user || !(yield (0, bcryptjs_1.compare)(token, user.resetToken))) {
-        throw new appError_1.InvalidError("Invalid or expired token");
+    if (!verification) {
+        console.log("No verification found");
+        return false;
     }
     const hashedPassword = yield (0, hash_1.hashPassword)(newPassword);
     yield prisma.user.update({
-        where: { id: user.id },
+        where: { id: userId },
         data: {
             password: hashedPassword,
-            resetToken: null,
-            resetTokenExpires: null,
         },
+    });
+    yield prisma.verificationCode.update({
+        where: { id: verification.id },
+        data: { used: true },
     });
     return { message: "Password reset successful" };
 });

@@ -2,6 +2,7 @@ import { any } from "joi";
 import { sendVerificationEmail } from "../../../utils/emailService";
 import { generateOTP } from "../../../utils/generateOTP";
 import { adminUser, User } from "../dtos/registerUserDto";
+import { addMinutes } from "date-fns";
 
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
@@ -68,7 +69,14 @@ export const createUserByAdmin = async (data: adminUser) => {
 
   // Generate OTP
   const code = generateOTP();
-  const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
+  // const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
+
+  // expiresAt.setUTCHours(expiresAt.getUTCHours());
+  // expiresAt.setUTCMinutes(expiresAt.getUTCMinutes());
+  // expiresAt.setUTCSeconds(expiresAt.getUTCSeconds());
+  // expiresAt.setUTCMilliseconds(0);
+
+  const expiresAt = addMinutes(new Date(), 10);
 
   await prisma.verificationCode.create({
     data: {

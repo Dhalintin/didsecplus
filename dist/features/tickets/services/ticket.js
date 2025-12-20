@@ -40,6 +40,15 @@ class TicketService {
                 },
                 include: {
                     alert: true,
+                    user: {
+                        select: {
+                            id: true,
+                            name: true,
+                            username: true,
+                            email: true,
+                            phone: true,
+                        },
+                    },
                 },
             });
         });

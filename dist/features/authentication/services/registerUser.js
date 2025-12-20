@@ -133,18 +133,19 @@ AuthService.sendLoginOTP = (user) => __awaiter(void 0, void 0, void 0, function*
     });
     return user;
 });
-AuthService.verifyUser = (email, code, verification_type) => __awaiter(void 0, void 0, void 0, function* () {
+AuthService.verifyUser = (userId, code) => __awaiter(void 0, void 0, void 0, function* () {
     const verification = yield prisma.verificationCode.findFirst({
         where: {
-            user: { email },
+            userId,
             code,
-            type: verification_type || "EMAIL_VERIFICATION",
+            type: "EMAIL_VERIFICATION",
             used: false,
             expiresAt: { gt: new Date() },
         },
         include: { user: true },
     });
     if (!verification) {
+        console.log("No verification found");
         return false;
     }
     // Mark code as used
@@ -152,10 +153,5 @@ AuthService.verifyUser = (email, code, verification_type) => __awaiter(void 0, v
         where: { id: verification.id },
         data: { used: true },
     });
-    // Mark user as verified
-    // await prisma.user.update({
-    //   where: { id: verification.userId },
-    //   data: { isVerified: true },
-    // });
     return true;
 });

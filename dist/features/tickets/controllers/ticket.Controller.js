@@ -74,7 +74,6 @@ class TicketController {
                     created_by: typeof created_by === "string" ? created_by : undefined,
                     alert_Id: typeof alert_id === "string" ? alert_id : undefined,
                 };
-                console.log(query);
                 const tickets = yield ticketService.getTickets(query);
                 new response_util_1.default(200, res, "Ticket created successfully!", tickets);
                 return;
