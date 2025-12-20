@@ -67,7 +67,6 @@ export class TicketController {
         created_by: typeof created_by === "string" ? created_by : undefined,
         alert_Id: typeof alert_id === "string" ? alert_id : undefined,
       };
-      console.log(query);
 
       const tickets = await ticketService.getTickets(query);
       new CustomResponse(200, res, "Ticket created successfully!", tickets);
