@@ -9,5 +9,6 @@ userRoute.post("/", authMiddleware_1.authMiddleware, controller.createUser);
 userRoute.get("/:id", authMiddleware_1.authMiddleware, controller.getUser);
 userRoute.get("/", authMiddleware_1.authMiddleware, controller.getUsers);
 userRoute.patch("/", authMiddleware_1.authMiddleware, controller.updateUser);
+userRoute.patch("/:id", authMiddleware_1.adminAuthMiddleware, controller.updateUser);
 userRoute.delete("/:id", authMiddleware_1.adminAuthMiddleware, controller.deleteUser);
 exports.default = userRoute;

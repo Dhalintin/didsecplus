@@ -82,8 +82,13 @@ class UserController {
     updateUser(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
+                let id;
+                if (req.params.id)
+                    id = req.params.id;
+                else
+                    id = req.user.userId;
                 const updatedata = {
-                    id: req.user.userId,
+                    id,
                     data: req.body,
                 };
                 const user = yield userService.updateUser(updatedata);
