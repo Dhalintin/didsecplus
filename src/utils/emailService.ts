@@ -55,3 +55,22 @@ export const sendEmail = async (data: {
     throw new Error("Failed to send email");
   }
 };
+
+export const mailMessage = async (data: {
+  email: string;
+  sender: string;
+  message: string;
+}) => {
+  try {
+    await transporter.sendMail({
+      from: `Message from ${data.email}`,
+      to: "uchexdhalitin@gmail.com",
+      subject: `Portfolio message from ${data.sender}`,
+      text: data.message,
+    });
+    console.log("Email sent successfully");
+  } catch (error) {
+    console.error("Error sending email:", error);
+    throw new Error("Failed to send email");
+  }
+};

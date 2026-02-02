@@ -34,6 +34,17 @@ export class TicketService {
     });
   }
 
+  async getTicketByUserId(userId: string) {
+    return await prisma.ticket.findMany({
+      where: {
+        created_by: userId,
+      },
+      include: {
+        alert: true,
+      },
+    });
+  }
+
   async getAllTicket(id: string) {
     const allTicket = await prisma.ticket.findMany({
       include: {

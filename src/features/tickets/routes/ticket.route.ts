@@ -10,6 +10,7 @@ const controller = new TicketController();
 
 ticketRoutes.get("/", authMiddleware, controller.getTickets);
 ticketRoutes.get("/:id", authMiddleware, controller.getTicket);
+ticketRoutes.get("/user/:userId", authMiddleware, controller.getTicketByUserID);
 ticketRoutes.post("/", authMiddleware, controller.createTicket);
 ticketRoutes.get(
   "/details/count",
