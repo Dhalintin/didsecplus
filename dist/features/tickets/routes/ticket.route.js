@@ -7,6 +7,7 @@ const ticketRoutes = (0, express_1.Router)();
 const controller = new ticket_Controller_1.TicketController();
 ticketRoutes.get("/", authMiddleware_1.authMiddleware, controller.getTickets);
 ticketRoutes.get("/:id", authMiddleware_1.authMiddleware, controller.getTicket);
+ticketRoutes.get("/user/:userId", authMiddleware_1.authMiddleware, controller.getTicketByUserID);
 ticketRoutes.post("/", authMiddleware_1.authMiddleware, controller.createTicket);
 ticketRoutes.get("/details/count", authMiddleware_1.authMiddleware, controller.getTicketsDetails);
 ticketRoutes.get("/trail/:ticketId", authMiddleware_1.authMiddleware, controller.getTicketsDetails);

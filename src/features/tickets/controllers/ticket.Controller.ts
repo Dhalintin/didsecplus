@@ -50,6 +50,17 @@ export class TicketController {
     }
   }
 
+  async getTicketByUserID(req: Request, res: Response) {
+    try {
+      const ticket = await ticketService.getTicketByUserId(req.params.userId);
+      new CustomResponse(200, res, "", ticket);
+      return;
+    } catch (error: any) {
+      new CustomResponse(409, res, error.message);
+      return;
+    }
+  }
+
   async getTickets(req: Request, res: Response) {
     try {
       const { page, page_size, status, assigned_to, alert_id, created_by } =

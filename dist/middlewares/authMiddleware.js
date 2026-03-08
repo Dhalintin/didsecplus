@@ -20,20 +20,27 @@ const authMiddleware = (req, res, next) => {
 };
 exports.authMiddleware = authMiddleware;
 const adminAuthMiddleware = (req, res, next) => {
-    if (!req.user) {
-        res.status(401).json({
-            success: false,
-            message: "Unauthorized!",
-        });
+    var _a;
+    const token = (_a = req.headers.authorization) === null || _a === void 0 ? void 0 : _a.split(" ")[1];
+    if (!token) {
+        res.status(401).json({ success: false, message: "Token required" });
         return;
     }
-    if (req.user.role !== "admin" && req.user.role !== "superAdmin") {
-        res.status(403).json({
-            success: false,
-            message: "Forbidden: Only admins are allowed",
-        });
+    try {
+        const payload = jwt_1.tokenService.verifyToken(token);
+        req.user = payload;
+        if (payload.role !== "admin" && payload.role !== "superAdmin") {
+            res.status(403).json({
+                success: false,
+                message: "Forbidden: you don't have clearance for this",
+            });
+            return;
+        }
+        next();
+    }
+    catch (_b) {
+        res.status(401).json({ success: false, message: "Invalid token." });
         return;
     }
-    next();
 };
 exports.adminAuthMiddleware = adminAuthMiddleware;

@@ -84,11 +84,7 @@ export class LoginController {
       }
 
       if (user.role === "citizen") {
-        new CustomResponse(
-          401,
-          res,
-          "Wrong endpoint for user role. Please use the correct login portal."
-        );
+        new CustomResponse(401, res, "Unauthorized!");
         return;
       }
 
@@ -101,9 +97,9 @@ export class LoginController {
         return;
       }
 
-      await AuthService.resendOTP(user);
+      const token = tokenService.generateToken(user.id, user.role);
 
-      const responData = {
+      const userData = {
         id: user.id,
         email: user.email,
         username: user.username,
@@ -111,12 +107,30 @@ export class LoginController {
         role: user.role,
       };
 
-      new CustomResponse(
-        200,
-        res,
-        "Login Token Sent to your email!",
-        responData
-      );
+      const responData = {
+        access_token: token,
+        expires_in: 3600,
+        user: userData,
+      };
+      // return;
+
+      // await AuthService.resendOTP(user);
+
+      // const responData = {
+      //   id: user.id,
+      //   email: user.email,
+      //   username: user.username,
+      //   name: user.name,
+      //   role: user.role,
+      // };
+
+      new CustomResponse(200, res, "Login Successful!", responData);
+      // new CustomResponse(
+      //   200,
+      //   res,
+      //   "Login Token Sent to your email!",
+      //   responData
+      // );
       return;
     } catch (err: any) {
       const status = err.statusCode || 500;

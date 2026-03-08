@@ -10,6 +10,7 @@ import userRoute from "./users/routes/user.route";
 import reportRoutes from "./reports/routes/report.route";
 import socketRoute from "./socket/socket.route";
 import contactRoute from "./contact/routes/contact.route";
+import mailRoutes from "./mail/routes/mail.route";
 
 appRouter.use("/auth", authRoutes);
 appRouter.use("/alerts", alertRoutes);
@@ -20,5 +21,6 @@ appRouter.use("/users", userRoute);
 appRouter.use("/contact", contactRoute);
 appRouter.use("/reports", reportRoutes);
 appRouter.use("/socket-test", socketRoute);
+appRouter.use("/mail", mailRoutes);
 
 export default appRouter;

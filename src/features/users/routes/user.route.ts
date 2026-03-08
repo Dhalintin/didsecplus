@@ -16,6 +16,8 @@ userRoute.get("/", authMiddleware, controller.getUsers);
 
 userRoute.patch("/", authMiddleware, controller.updateUser);
 
+userRoute.patch("/:id", adminAuthMiddleware, controller.updateUser);
+
 userRoute.delete("/:id", adminAuthMiddleware, controller.deleteUser);
 
 export default userRoute;

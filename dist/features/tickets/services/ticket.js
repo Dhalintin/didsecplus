@@ -53,6 +53,18 @@ class TicketService {
             });
         });
     }
+    getTicketByUserId(userId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return yield prisma.ticket.findMany({
+                where: {
+                    created_by: userId,
+                },
+                include: {
+                    alert: true,
+                },
+            });
+        });
+    }
     getAllTicket(id) {
         return __awaiter(this, void 0, void 0, function* () {
             const allTicket = yield prisma.ticket.findMany({

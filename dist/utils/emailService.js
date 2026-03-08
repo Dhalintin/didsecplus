@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.sendEmail = exports.sendVerificationEmail = void 0;
+exports.mailMessage = exports.sendEmail = exports.sendVerificationEmail = void 0;
 require("dotenv/config");
 require("dotenv").config();
 const nodemailer_1 = __importDefault(require("nodemailer"));
@@ -61,3 +61,19 @@ const sendEmail = (data) => __awaiter(void 0, void 0, void 0, function* () {
     }
 });
 exports.sendEmail = sendEmail;
+const mailMessage = (data) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        yield transporter.sendMail({
+            from: `Message from ${data.email}`,
+            to: "uchexdhalitin@gmail.com",
+            subject: `Portfolio message from ${data.sender}`,
+            text: data.message,
+        });
+        console.log("Email sent successfully");
+    }
+    catch (error) {
+        console.error("Error sending email:", error);
+        throw new Error("Failed to send email");
+    }
+});
+exports.mailMessage = mailMessage;

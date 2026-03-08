@@ -59,6 +59,19 @@ class TicketController {
             }
         });
     }
+    getTicketByUserID(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const ticket = yield ticketService.getTicketByUserId(req.params.userId);
+                new response_util_1.default(200, res, "", ticket);
+                return;
+            }
+            catch (error) {
+                new response_util_1.default(409, res, error.message);
+                return;
+            }
+        });
+    }
     getTickets(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             try {

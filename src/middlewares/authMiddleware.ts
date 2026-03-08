@@ -34,21 +34,25 @@ export const adminAuthMiddleware = (
   res: Response,
   next: NextFunction
 ): void => {
-  if (!req.user) {
-    res.status(401).json({
-      success: false,
-      message: "Unauthorized!",
-    });
+  const token: string | undefined = req.headers.authorization?.split(" ")[1];
+  if (!token) {
+    res.status(401).json({ success: false, message: "Token required" });
     return;
   }
 
-  if (req.user.role !== "admin" && req.user.role !== "superAdmin") {
-    res.status(403).json({
-      success: false,
-      message: "Forbidden: Only admins are allowed",
-    });
+  try {
+    const payload = tokenService.verifyToken(token);
+    req.user = payload;
+    if (payload.role !== "admin" && payload.role !== "superAdmin") {
+      res.status(403).json({
+        success: false,
+        message: "Forbidden: you don't have clearance for this",
+      });
+      return;
+    }
+    next();
+  } catch {
+    res.status(401).json({ success: false, message: "Invalid token." });
     return;
   }
-
-  next();
 };
