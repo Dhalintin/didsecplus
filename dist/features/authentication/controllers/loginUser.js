@@ -87,7 +87,7 @@ class LoginController {
                     return;
                 }
                 if (user.role === "citizen") {
-                    new response_util_1.default(401, res, "Wrong endpoint for user role. Please use the correct login portal.");
+                    new response_util_1.default(401, res, "Unauthorized!");
                     return;
                 }
                 if (!user.password ||
@@ -95,15 +95,35 @@ class LoginController {
                     new response_util_1.default(404, res, "User Email or Password incorrect!");
                     return;
                 }
-                yield registerUser_1.AuthService.resendOTP(user);
-                const responData = {
+                const token = jwt_1.tokenService.generateToken(user.id, user.role);
+                const userData = {
                     id: user.id,
                     email: user.email,
                     username: user.username,
                     name: user.name,
                     role: user.role,
                 };
-                new response_util_1.default(200, res, "Login Token Sent to your email!", responData);
+                const responData = {
+                    access_token: token,
+                    expires_in: 3600,
+                    user: userData,
+                };
+                // return;
+                // await AuthService.resendOTP(user);
+                // const responData = {
+                //   id: user.id,
+                //   email: user.email,
+                //   username: user.username,
+                //   name: user.name,
+                //   role: user.role,
+                // };
+                new response_util_1.default(200, res, "Login Successful!", responData);
+                // new CustomResponse(
+                //   200,
+                //   res,
+                //   "Login Token Sent to your email!",
+                //   responData
+                // );
                 return;
             }
             catch (err) {
